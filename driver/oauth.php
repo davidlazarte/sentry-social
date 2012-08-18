@@ -30,7 +30,6 @@ use Response;
  * OAuth Driver Class
  *
  * @package  SentrySocial
- * @author   Daniel Petrie
  */
 class Driver_OAuth extends SentrySocial
 {

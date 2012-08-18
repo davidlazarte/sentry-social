@@ -27,7 +27,6 @@ use Input;
  * Oauth2 Driver Class
  *
  * @package  SentrySocial
- * @author   Daniel Petrie
  */
 class Driver_OAuth2 extends SentrySocial
 {
