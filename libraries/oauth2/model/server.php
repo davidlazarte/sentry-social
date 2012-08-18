@@ -6,6 +6,9 @@
  * @category   Server Model
  * @author     Phil Sturgeon
  * @copyright  (c) 2012 HappyNinjas Ltd
+ *
+ * @modified_by  Cartalyst LLC
+ * @copyright   (c) 2012 Cartalyst LLC.
  */
 
 namespace SentrySocial\OAuth2;

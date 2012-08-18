@@ -1,4 +1,0 @@
-sentrysocial
-============
-
-Sentry Social

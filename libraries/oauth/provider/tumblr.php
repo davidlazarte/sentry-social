@@ -11,6 +11,9 @@
  * @package    OAuth
  * @category   Provider
  * @author     Fuel Development Team
+ *
+ * @modified_by  Cartalyst LLC
+ * @copyright   (c) 2012 Cartalyst LLC.
  */
 
 namespace SentrySocial\OAuth;

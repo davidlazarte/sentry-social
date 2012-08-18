@@ -14,6 +14,9 @@ use Session;
  * @author     Phil Sturgeon
  * @copyright  (c) 2012 HappyNinjas Ltd
  * @license    http://philsturgeon.co.uk/code/dbad-license
+ *
+ * @modified_by  Cartalyst LLC
+ * @copyright   (c) 2012 Cartalyst LLC.
  */
 abstract class Provider
 {

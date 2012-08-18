@@ -5,6 +5,9 @@
  *
  * @author Originally written by Naitik Shah <naitik@facebook.com>.
  * @author Update to draft v10 by Edison Wong <hswong3i@pantarei-design.com>.
+ *
+ * @modified_by  Cartalyst LLC
+ * @copyright   (c) 2012 Cartalyst LLC.
  */
 
 namespace SentrySocial\OAuth2;
