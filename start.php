@@ -18,6 +18,7 @@ Autoloader::namespaces(array(
 ));
 
 Autoloader::alias('SentrySocial\\SentrySocial', 'SentrySocial');
+Autoloader::alias('SentrySocial\\SentrySocialException', 'SentrySocialException');
 
 Autoloader::map(array(
 	/**

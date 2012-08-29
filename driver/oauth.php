@@ -46,7 +46,7 @@ class Driver_OAuth extends SentrySocial
 		));
 
 		// set the callback url
-		$callback_url = \URL::base().'/'.str_finish(Config::get('sentrysocial::sentrysocial.callback_url'), '/').$this->provider->name;
+		$callback_url = \URL::base().'/'.str_finish(Config::get('sentrysocial::sentrysocial.url.callback'), '/').$this->provider->name;
 
 		$this->consumer->callback($callback_url);
 
@@ -69,6 +69,13 @@ class Driver_OAuth extends SentrySocial
 	 */
 	public function callback()
 	{
+		$denied = Input::get('denied');
+
+		if ($denied)
+		{
+			return \Redirect::to(Config::get('sentrysocial::sentrysocial.url.cancel'))->send();
+		}
+
 		$config = Config::get('sentrysocial::sentrysocial.providers.'.$this->provider->name);
 
 		// set consumer

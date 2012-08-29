@@ -27,16 +27,19 @@ class SentrySocial_Auth_Controller extends Controller
 
 		switch ($status)
 		{
+			// user needs to register their email address, since we don't have it
 			case 'register':
-				return Redirect::to('sentrysocial/auth/register');
+				return Redirect::to(Config::get('sentrysocial::sentrysocial.url.register'));
 				break;
 
+			// we have everything, redirect the user wherever you want now that they are signed in
 			case 'authenticated':
-				return Redirect::to('');
+				return Redirect::to(Config::get('sentrysocial::sentrysocial.url.authenticated'));
 				break;
 
+			// we redirect back to your login page because something went wrong
 			default:
-				return Redirect::to('login');
+				return Redirect::to(Config::get('sentrysocial::sentrysocial.url.login'));
 				break;
 		}
 	}
@@ -62,7 +65,7 @@ class SentrySocial_Auth_Controller extends Controller
 
 		if ($validation->fails())
 		{
-			return Redirect::to('sentrysocial/auth/register')->with_input()->with_errors($validation);
+			return Redirect::to(Config::get('sentrysocial::sentrysocial.url.register'))->with_input()->with_errors($validation);
 		}
 
 		// remove email confirmation
@@ -85,18 +88,18 @@ class SentrySocial_Auth_Controller extends Controller
 			{
 				SentrySocial::create($social, false);
 
-				return Redirect::to('');
+				return Redirect::to(Config::get('sentrysocial::sentrysocial.url.authenticated'));
 			}
 			else
 		    {
-		        return Redirect::to('sentrysocial/auth/register')->with('login_error', 'Invalid user name or password.');
+		        return Redirect::to(Config::get('sentrysocial::sentrysocial.url.register'))->with('login_error', 'Invalid user name or password.');
 		    }
 		}
 		catch (Sentry\SentryException $e)
 		{
 		    // issue logging in via Sentry - lets catch the sentry error thrown
 		    // store/set and display caught exceptions such as a suspended user with limit attempts feature.
-		   	return Redirect::to('sentrysocial/auth/register')->with('login_error', $e->getMessage());
+		   	return Redirect::to(Config::get('sentrysocial::sentrysocial.url.register'))->with('login_error', $e->getMessage());
 		}
 
 

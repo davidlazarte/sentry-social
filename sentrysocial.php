@@ -120,7 +120,14 @@ class SentrySocial
 	public function login()
 	{
 		// get token
-		$token = $this->callback();
+		try
+		{
+			$token = $this->callback();
+		}
+		catch(SentrySocialException $e)
+		{
+			throw new SentrySocialException($e->getMessage());
+		}
 
 		// get user info
 		$user_hash = $this->get_user_info($token);
@@ -143,7 +150,7 @@ class SentrySocial
 					'token'      => isset($token->access_token) ? $token->access_token : '',
 					'secret'     => isset($token->secret) ? $token->secret : '',
 					'expires'    => isset($token->expires) ? $token->expires : '',
-					'updated_at' => time()
+					'updated_at' => static::sql_timestamp(),
 				));
 
 			// force login
@@ -157,6 +164,20 @@ class SentrySocial
 		if (Sentry::check())
 		{
 			$user_id = Sentry::user()->get('id');
+
+			// user does not exist - store in the DB;
+			DB::table('social_authentication')->insert(array(
+				'user_id' => $user_id,
+				'provider'   => $this->provider->name,
+				'uid'        => $user_hash['uid'],
+				'token'      => isset($token->access_token) ? $token->access_token : '',
+				'secret'     => isset($token->secret) ? $token->secret : '',
+				'expires'    => isset($token->expires) ? $token->expires : '',
+				'created_at' => static::sql_timestamp(),
+				'updated_at' => static::sql_timestamp(),
+			));
+
+			return 'authenticated';
 		}
 		// otherwise lets create or allow them to login to a sentry account
 		// if the social site doesn't return an email/username we will ask for one
@@ -215,7 +236,6 @@ class SentrySocial
 						$user_id = Sentry::user()->create($user);
 					}
 
-
 					// user does not exist - store in the DB;
 					DB::table('social_authentication')->insert(array(
 						'user_id'    => $user_id,
@@ -224,8 +244,8 @@ class SentrySocial
 						'token'      => isset($token->access_token) ? $token->access_token : '',
 						'secret'     => isset($token->secret) ? $token->secret : '',
 						'expires'    => isset($token->expires) ? $token->expires : '',
-						'created_at' => time(),
-						'updated_at' => time()
+						'created_at' => static::sql_timestamp(),
+						'updated_at' => static::sql_timestamp(),
 					));
 
 					// force login
@@ -300,8 +320,8 @@ class SentrySocial
 			// user does not exist - store in the DB;
 			DB::table('social_authentication')->insert($social['auth'] + array(
 				'user_id' => $user_id,
-				'created_at' => time(),
-				'updated_at' => time(),
+				'created_at' => static::sql_timestamp(),
+				'updated_at' => static::sql_timestamp(),
 			));
 
 			// force login
@@ -313,8 +333,17 @@ class SentrySocial
 		{
 			throw new \SentrySocialException($e->getMessage());
 		}
+	}
 
-
+	/**
+	 * Returns an SQL timestamp appropriate
+	 * for the currect database driver.
+	 *
+	 * @return   string
+	 */
+	protected static function sql_timestamp()
+	{
+		return date(DB::connection()->grammar()->grammar->datetime);
 	}
 
 }

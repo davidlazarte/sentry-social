@@ -15,9 +15,27 @@
 return array(
 
 	/**
-	 * Callback URL
+	 * URL's
 	 */
-	'callback_url' => 'sentrysocial/auth/callback',
+	// 'callback_url' => 'sentrysocial/auth/callback',
+
+	'url' => array(
+		// request callback url
+		'callback'      => 'sentrysocial/auth/callback',
+
+		// user canceled authorization
+		'cancel'        => 'login',
+
+		// register
+		'register'      => 'sentrysocial/auth/register',
+
+		// authenticated
+		'authenticated' => '',
+
+		// login
+		'login'         => 'login',
+	),
+
 
 	/**
 	 * Social Providers
