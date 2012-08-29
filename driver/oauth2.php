@@ -53,7 +53,7 @@ class Driver_OAuth2 extends SentrySocial
 			switch (Input::get('error'))
 			{
 				case 'access_denied':
-					return \Redirect::to(Config::get('sentrysocial::sentrysocial.url.cancel'))->send();
+					return \Redirect::to(Config::get('sentrysocial::sentrysocial.url.login'))->send();
 				break;
 				default:
 					throw new SentrySocialException(Input::get('error'));

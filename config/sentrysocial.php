@@ -17,23 +17,18 @@ return array(
 	/**
 	 * URL's
 	 */
-	// 'callback_url' => 'sentrysocial/auth/callback',
-
 	'url' => array(
 		// request callback url
 		'callback'      => 'sentrysocial/auth/callback',
 
-		// user canceled authorization
-		'cancel'        => 'login',
-
 		// register
 		'register'      => 'sentrysocial/auth/register',
 
+		// login page
+		'login'         => 'login',
+
 		// authenticated
 		'authenticated' => '',
-
-		// login
-		'login'         => 'login',
 	),
 
 

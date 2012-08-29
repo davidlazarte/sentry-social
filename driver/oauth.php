@@ -73,7 +73,7 @@ class Driver_OAuth extends SentrySocial
 
 		if ($denied)
 		{
-			return \Redirect::to(Config::get('sentrysocial::sentrysocial.url.cancel'))->send();
+			return \Redirect::to(Config::get('sentrysocial::sentrysocial.url.login'))->send();
 		}
 
 		$config = Config::get('sentrysocial::sentrysocial.providers.'.$this->provider->name);
