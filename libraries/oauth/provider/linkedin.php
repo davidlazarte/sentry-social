@@ -16,12 +16,13 @@
  * @since      3.0.7
  *
  * @modified_by  Cartalyst LLC
- * @copyright   (c) 2012 Cartalyst LLC.
+ * @copyright    (c) 2012 Cartalyst LLC.
+ * @version      1.1
  */
 
-namespace SentrySocial\OAuth;
+namespace SentrySocial;
 
-class Provider_Linkedin extends Provider {
+class Libraries_OAuth_Provider_Linkedin extends Libraries_OAuth_Provider {
 
 	public $name = 'linkedin';
 
@@ -40,11 +41,11 @@ class Provider_Linkedin extends Provider {
 		return 'https://api.linkedin.com/uas/oauth/accessToken';
 	}
 
-	public function get_user_info(Consumer $consumer, Token $token)
+	public function get_user_info(Libraries_OAuth_Consumer $consumer, Libraries_OAuth_Token $token)
 	{
 		// Create a new GET request with the required parameters
 		$url = 'https://api.linkedin.com/v1/people/~:(id,first-name,last-name,headline,member-url-resources,picture-url,location,public-profile-url)?format=json';
-		$request = Request::forge('resource', 'GET', $url, array(
+		$request = Libraries_OAuth_Request::make('resource', 'GET', $url, array(
 			'oauth_consumer_key' => $consumer->key,
 			'oauth_token'        => $token->access_token,
 		));

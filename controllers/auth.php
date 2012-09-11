@@ -5,7 +5,7 @@
  * NOTICE OF LICENSE
  *
  * @package    Sentry Social
- * @version    1.0
+ * @version    1.1
  * @author     Cartalyst LLC
  * @license    http://getplatform.com/manuals/sentrysocial/license
  * @copyright  (c) 2011 - 2012, Cartalyst LLC
@@ -18,12 +18,12 @@ class SentrySocial_Auth_Controller extends Controller
 
 	public function get_session($provider)
 	{
-		return SentrySocial::forge($provider)->authenticate();
+		return SentrySocial::make($provider)->authenticate();
 	}
 
 	public function get_callback($provider)
 	{
-		$status = SentrySocial::forge($provider)->login();
+		$status = SentrySocial::make($provider)->login();
 
 		switch ($status)
 		{

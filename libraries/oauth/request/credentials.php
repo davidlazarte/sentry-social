@@ -10,12 +10,13 @@
  * @since      3.0.7
  *
  * @modified_by  Cartalyst LLC
- * @copyright   (c) 2012 Cartalyst LLC.
+ * @copyright    (c) 2012 Cartalyst LLC.
+ * @version      1.1
  */
 
-namespace SentrySocial\OAuth;
+namespace SentrySocial;
 
-class Request_Credentials extends Request {
+class Libraries_OAuth_Request_Credentials extends Libraries_OAuth_Request {
 
 
 } // End Request_Credentials

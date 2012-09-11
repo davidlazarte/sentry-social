@@ -10,12 +10,13 @@
  * @since      3.0.7
  *
  * @modified_by  Cartalyst LLC
- * @copyright   (c) 2012 Cartalyst LLC.
+ * @copyright    (c) 2012 Cartalyst LLC.
+ * @version      1.1
  */
 
-namespace SentrySocial\OAuth;
+namespace SentrySocial;
 
-class Request_Token extends Request {
+class Libraries_OAuth_Request_Token extends Libraries_OAuth_Request {
 
 	protected $name = 'request';
 
@@ -32,7 +33,7 @@ class Request_Token extends Request {
 
 	public function execute(array $options = NULL)
 	{
-		return Response::forge(parent::execute($options));
+		return Libraries_OAuth_Response::make(parent::execute($options));
 	}
 
 } // End Request_Token

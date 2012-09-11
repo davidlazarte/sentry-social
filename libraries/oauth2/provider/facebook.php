@@ -9,12 +9,13 @@
  * @license    http://philsturgeon.co.uk/code/dbad-license
  *
  * @modified_by  Cartalyst LLC
- * @copyright   (c) 2012 Cartalyst LLC.
+ * @copyright    (c) 2012 Cartalyst LLC.
+ * @version      1.1
  */
 
-namespace SentrySocial\OAuth2;
+namespace SentrySocial;
 
-class Provider_Facebook extends Provider
+class Libraries_OAuth2_Provider_Facebook extends Libraries_OAuth2_Provider
 {
 	public $scope = array('offline_access', 'email', 'read_stream');
 
@@ -28,7 +29,7 @@ class Provider_Facebook extends Provider
 		return 'https://graph.facebook.com/oauth/access_token';
 	}
 
-	public function get_user_info(Token_Access $token)
+	public function get_user_info(Libraries_OAuth2_Token_Access $token)
 	{
 		$url = 'https://graph.facebook.com/me?'.http_build_query(array(
 			'access_token' => $token->access_token,

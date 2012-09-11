@@ -10,22 +10,25 @@
  * @since      3.0.7
  *
  * @modified_by  Cartalyst LLC
- * @copyright   (c) 2012 Cartalyst LLC.
+ * @copyright    (c) 2012 Cartalyst LLC.
+ * @version      1.1
  */
 
-namespace SentrySocial\OAuth;
+namespace SentrySocial;
 
-class Consumer {
+use Exception;
+
+class Libraries_OAuth_Consumer {
 
 	/**
 	 * Create a new consumer object.
 	 *
-	 *     $consumer = Consumer::forge($options);
+	 *     $consumer = Consumer::make($options);
 	 *
 	 * @param   array  consumer options, key and secret are required
 	 * @return  Consumer
 	 */
-	public static function forge(array $options = NULL)
+	public static function make(array $options = NULL)
 	{
 		return new static($options);
 	}

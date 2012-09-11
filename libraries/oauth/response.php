@@ -10,14 +10,15 @@
  * @since      3.0.7
  *
  * @modified_by  Cartalyst LLC
- * @copyright   (c) 2012 Cartalyst LLC.
+ * @copyright    (c) 2012 Cartalyst LLC.
+ * @version      1.1
  */
 
-namespace SentrySocial\OAuth;
+namespace SentrySocial;
 
-class Response {
+class Libraries_OAuth_Response {
 
-	public static function forge($body)
+	public static function make($body)
 	{
 		return new static($body);
 	}
@@ -31,7 +32,7 @@ class Response {
 	{
 		if ($body)
 		{
-			$this->params = OAuth::parse_params($body);
+			$this->params = Libraries_OAuth_OAuth::parse_params($body);
 		}
 	}
 

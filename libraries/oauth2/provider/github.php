@@ -9,12 +9,13 @@
  * @license    http://philsturgeon.co.uk/code/dbad-license
  *
  * @modified_by  Cartalyst LLC
- * @copyright   (c) 2012 Cartalyst LLC.
+ * @copyright    (c) 2012 Cartalyst LLC.
+ * @version      1.1
  */
 
-namespace SentrySocial\OAuth2;
+namespace SentrySocial;
 
-class Provider_Github extends Provider
+class Libraries_OAuth2_Provider_Github extends Libraries_OAuth2_Provider
 {
 	public function url_authorize()
 	{
@@ -26,7 +27,7 @@ class Provider_Github extends Provider
 		return 'https://github.com/login/oauth/access_token';
 	}
 
-	public function get_user_info(Token_Access $token)
+	public function get_user_info(Libraries_OAuth2_Token_Access $token)
 	{
 		$url = 'https://api.github.com/user?'.http_build_query(array(
 			'access_token' => $token->access_token,

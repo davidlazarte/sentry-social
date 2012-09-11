@@ -10,12 +10,13 @@
  * @since      3.0.7
  *
  * @modified_by  Cartalyst LLC
- * @copyright   (c) 2012 Cartalyst LLC.
+ * @copyright    (c) 2012 Cartalyst LLC.
+ * @version      1.1
  */
 
-namespace SentrySocial\OAuth;
+namespace SentrySocial;
 
-class Token_Access extends Token {
+class Libraries_OAuth_Token_Access extends Libraries_OAuth_Token {
 
 	protected $name = 'access';
 

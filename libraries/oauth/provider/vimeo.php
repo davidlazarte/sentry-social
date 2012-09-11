@@ -12,12 +12,13 @@
  * @author     Fuel Development Team
  *
  * @modified_by  Cartalyst LLC
- * @copyright   (c) 2012 Cartalyst LLC.
+ * @copyright    (c) 2012 Cartalyst LLC.
+ * @version      1.1
  */
 
-namespace SentrySocial\OAuth;
+namespace SentrySocial;
 
-class Provider_Vimeo extends Provider {
+class Libraries_OAuth_Provider_Vimeo extends Libraries_OAuth_Provider {
 
 	public $name = 'vimeo';
 
@@ -36,10 +37,10 @@ class Provider_Vimeo extends Provider {
 		return 'http://vimeo.com/oauth/access_token';
 	}
 
-	public function get_user_info(Consumer $consumer, Token $token)
+	public function get_user_info(Libraries_OAuth_Consumer $consumer, Libraries_OAuth_Token $token)
 	{
 		// Create a new GET request with the required parameters
-		$request = Request::forge('resource', 'GET', 'http://vimeo.com/api/rest/v2/', array(
+		$request = Libraries_OAuth_Request::make('resource', 'GET', 'http://vimeo.com/api/rest/v2/', array(
 			'method'             => 'vimeo.people.getInfo',
 			'oauth_consumer_key' => $consumer->key,
 			'oauth_token'        => $token->access_token,

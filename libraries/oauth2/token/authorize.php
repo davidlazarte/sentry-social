@@ -8,12 +8,13 @@
  * @copyright  (c) 2012 HappyNinjas Ltd
  *
  * @modified_by  Cartalyst LLC
- * @copyright   (c) 2012 Cartalyst LLC.
+ * @copyright    (c) 2012 Cartalyst LLC.
+ * @version      1.1
  */
 
-namespace SentrySocial\OAuth2;
+namespace SentrySocial;
 
-class Token_Authorize extends Token
+class Libraries_OAuth2_Token_Authorize extends Libraries_OAuth2_Token
 {
 	/**
 	 * @var  string  code
@@ -35,12 +36,12 @@ class Token_Authorize extends Token
 	{
 		if ( ! isset($options['code']))
 	    {
-            throw new Exception(array('message' => 'Required option not passed: code'));
+            throw new Libraries_OAuth2_Exception(array('message' => 'Required option not passed: code'));
         }
 
         elseif ( ! isset($options['redirect_uri']))
         {
-            throw new Exception(array('message' => 'Required option not passed: redirect_uri'));
+            throw new Libraries_OAuth2_Exception(array('message' => 'Required option not passed: redirect_uri'));
         }
 
 		$this->code = $options['code'];

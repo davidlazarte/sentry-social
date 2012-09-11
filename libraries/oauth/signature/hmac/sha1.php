@@ -13,12 +13,13 @@
  * @since      3.0.7
  *
  * @modified_by  Cartalyst LLC
- * @copyright   (c) 2012 Cartalyst LLC.
+ * @copyright    (c) 2012 Cartalyst LLC.
+ * @version      1.1
  */
 
-namespace SentrySocial\OAuth;
+namespace SentrySocial;
 
-class Signature_HMAC_SHA1 extends Signature {
+class Libraries_OAuth_Signature_HMAC_SHA1 extends Libraries_OAuth_Signature {
 
 	protected $name = 'HMAC-SHA1';
 
@@ -37,7 +38,7 @@ class Signature_HMAC_SHA1 extends Signature {
 	 * @uses    Signature::key
 	 * @uses    Request::base_string
 	 */
-	public function sign(Request $request, Consumer $consumer, Token $token = NULL)
+	public function sign(Libraries_OAuth_Request $request, Libraries_OAuth_Consumer $consumer, Libraries_OAuth_Token $token = NULL)
 	{
 		// Get the signing key
 		$key = $this->key($consumer, $token);
@@ -66,7 +67,7 @@ class Signature_HMAC_SHA1 extends Signature {
 	 * @return  boolean
 	 * @uses    Signature_HMAC_SHA1::sign
 	 */
-	public function verify($signature, Request $request, Consumer $consumer, Token $token = NULL)
+	public function verify($signature, Libraries_OAuth_Request $request, Libraries_OAuth_Consumer $consumer, Libraries_OAuth_Token $token = NULL)
 	{
 		return $signature === $this->sign($request, $consumer, $token);
 	}

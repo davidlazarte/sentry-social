@@ -10,25 +10,26 @@
  * @since      3.0.7
  *
  * @modified_by  Cartalyst LLC
- * @copyright   (c) 2012 Cartalyst LLC.
+ * @copyright    (c) 2012 Cartalyst LLC.
+ * @version      1.1
  */
 
-namespace SentrySocial\OAuth;
+namespace SentrySocial;
 
-abstract class Token {
+abstract class Libraries_OAuth_Token {
 
 	/**
 	 * Create a new token object.
 	 *
-	 *     $token = Token::forge($name);
+	 *     $token = Token::make($name);
 	 *
 	 * @param   string  token type
 	 * @param   array   token options
 	 * @return  Token
 	 */
-	public static function forge($name, array $options = NULL)
+	public static function make($name, array $options = NULL)
 	{
-		$class = 'SentrySocial\\OAuth\\Token_'.ucfirst(str_replace('-', '_', $name));
+		$class = 'SentrySocial\\Libraries_OAuth_Token_'.ucfirst(str_replace('-', '_', $name));
 
 		return new $class($options);
 	}

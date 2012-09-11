@@ -9,12 +9,13 @@
  * @license    http://philsturgeon.co.uk/code/dbad-license
  *
  * @modified_by  Cartalyst LLC
- * @copyright   (c) 2012 Cartalyst LLC.
+ * @copyright    (c) 2012 Cartalyst LLC.
+ * @version      1.1
  */
 
-namespace SentrySocial\OAuth2;
+namespace SentrySocial;
 
-class Provider_Foursquare extends Provider
+class Libraries_OAuth2_Provider_Foursquare extends Libraries_OAuth2_Provider
 {
 	/**
 	 * @var  string  the method to use when requesting tokens
@@ -31,7 +32,7 @@ class Provider_Foursquare extends Provider
 		return 'https://foursquare.com/oauth2/access_token';
 	}
 
-	public function get_user_info(Token_Access $token)
+	public function get_user_info(Libraries_OAuth2_Token_Access $token)
 	{
 		$url = 'https://api.foursquare.com/v2/users/self?'.http_build_query(array(
 			'oauth_token' => $token->access_token,

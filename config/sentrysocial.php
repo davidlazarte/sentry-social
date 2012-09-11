@@ -5,7 +5,7 @@
  * NOTICE OF LICENSE
  *
  * @package    Sentry Social
- * @version    1.0
+ * @version    1.1
  * @author     Cartalyst LLC
  * @license    http://getplatform.com/manuals/sentrysocial/license
  * @copyright  (c) 2011 - 2012, Cartalyst LLC

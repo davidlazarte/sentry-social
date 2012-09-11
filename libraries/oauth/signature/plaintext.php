@@ -11,12 +11,13 @@
  * @since      3.0.7
  *
  * @modified_by  Cartalyst LLC
- * @copyright   (c) 2012 Cartalyst LLC.
+ * @copyright    (c) 2012 Cartalyst LLC.
+ * @version      1.1
  */
 
-namespace SentrySocial\OAuth;
+namespace SentrySocial;
 
-class Signature_PLAINTEXT extends Signature {
+class Libraries_OAuth_Signature_PLAINTEXT extends Libraries_OAuth_Signature {
 
 	protected $name = 'PLAINTEXT';
 
@@ -32,7 +33,7 @@ class Signature_PLAINTEXT extends Signature {
 	 * @param   Token     token
 	 * @return  $this
 	 */
-	public function sign(Request $request, Consumer $consumer, Token $token = NULL)
+	public function sign(Libraries_OAuth_Request $request, Libraries_OAuth_Consumer $consumer, Libraries_OAuth_Token $token = NULL)
 	{
 		// Use the signing key as the signature
 		return $this->key($consumer, $token);
@@ -55,7 +56,7 @@ class Signature_PLAINTEXT extends Signature {
 	 * @return  boolean
 	 * @uses    Signature_PLAINTEXT::sign
 	 */
-	public function verify($signature, Request $request, Consumer $consumer, Token $token = NULL)
+	public function verify($signature, Libraries_OAuth_Request $request, Libraries_OAuth_Consumer $consumer, Libraries_OAuth_Token $token = NULL)
 	{
 		return $signature === $this->key($consumer, $token);
 	}

@@ -5,7 +5,7 @@
  * NOTICE OF LICENSE
  *
  * @package    Sentry Social
- * @version    1.0
+ * @version    1.1
  * @author     Cartalyst LLC
  * @license    http://getplatform.com/manuals/sentrysocial/license
  * @copyright  (c) 2011 - 2012, Cartalyst LLC
@@ -17,7 +17,6 @@ namespace SentrySocial;
 use Config;
 use Cookie;
 use Input;
-use OAuth\Consumer;
 use Response;
 
 /**
@@ -40,7 +39,7 @@ class Driver_OAuth extends SentrySocial
 		$config = Config::get('sentrysocial::sentrysocial.providers.'.$this->provider->name);
 
 		// set consumer
-		$this->consumer = OAuth\Consumer::forge(array(
+		$this->consumer = Libraries_OAuth_Consumer::make(array(
 			'key'    => $config['app_id'],
 			'secret' => $config['app_secret']
 		));
@@ -79,7 +78,7 @@ class Driver_OAuth extends SentrySocial
 		$config = Config::get('sentrysocial::sentrysocial.providers.'.$this->provider->name);
 
 		// set consumer
-		$this->consumer = OAuth\Consumer::forge(array(
+		$this->consumer = Libraries_OAuth_Consumer::make(array(
 			'key'    => $config['app_id'],
 			'secret' => $config['app_secret']
 		));
@@ -87,14 +86,14 @@ class Driver_OAuth extends SentrySocial
 		// get token if it is set
 		if ($token = Cookie::get('sentry_social_token'))
 		{
+			Cookie::forget('sentry_social_token');
+
 			// Get the token from storage
 			$token = unserialize(base64_decode($token));
 
 			// make sure token matches
 			if ($token->access_token != Input::get('oauth_token'))
 			{
-				Cookie::forget('sentry_social_token');
-
 				throw new SentrySocialException('Invalid Token in Callback');
 			}
 		}

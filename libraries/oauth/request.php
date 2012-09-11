@@ -10,17 +10,18 @@
  * @since      3.0.7
  *
  * @modified_by  Cartalyst LLC
- * @copyright   (c) 2012 Cartalyst LLC.
+ * @copyright    (c) 2012 Cartalyst LLC.
+ * @version      1.1
  */
 
-namespace SentrySocial\OAuth;
+namespace SentrySocial;
 
-class Request {
+class Libraries_OAuth_Request {
 
 	/**
 	 * Create a new request object.
 	 *
-	 *     $request = Request::forge('token', 'GET', 'http://example.com/oauth/request_token');
+	 *     $request = Request::make('token', 'GET', 'http://example.com/oauth/request_token');
 	 *
 	 * @param   string  request type
 	 * @param   string  request URL
@@ -28,9 +29,9 @@ class Request {
 	 * @param   array   request parameters
 	 * @return  Request
 	 */
-	public static function forge($type, $method, $url = NULL, array $params = NULL)
+	public static function make($type, $method, $url = NULL, array $params = NULL)
 	{
-		$class = 'SentrySocial\\OAuth\\Request_'.ucfirst(str_replace('-', '_', $type));
+		$class = 'SentrySocial\\Libraries_OAuth_Request_'.ucfirst(str_replace('-', '_', $type));
 
 		return new $class($method, $url, $params);
 	}
@@ -93,7 +94,7 @@ class Request {
 
 		// Separate the URL and query string, which will be used as additional
 		// default parameters
-		list ($url, $default) = OAuth::parse_url($url);
+		list ($url, $default) = Libraries_OAuth_OAuth::parse_url($url);
 
 		// Set the request URL
 		$this->url = $url;
@@ -113,7 +114,7 @@ class Request {
 		if ($this->required('oauth_version') AND ! isset($this->params['oauth_version']))
 		{
 			// Set the version of this request
-			$this->params['oauth_version'] = OAuth::$version;
+			$this->params['oauth_version'] = Libraries_OAuth_OAuth::$version;
 		}
 
 		if ($this->required('oauth_timestamp') AND ! isset($this->params['oauth_timestamp']))
@@ -200,8 +201,8 @@ class Request {
 		// method & url & sorted-parameters
 		return implode('&', array(
 			$this->method,
-			OAuth::urlencode($url),
-			OAuth::urlencode(OAuth::normalize_params($params)),
+			Libraries_OAuth_OAuth::urlencode($url),
+			Libraries_OAuth_OAuth::urlencode(Libraries_OAuth_OAuth::normalize_params($params)),
 		));
 	}
 
@@ -344,7 +345,7 @@ class Request {
 			{
 				// OAuth Spec 5.4.1
 				// "Parameter names and values are encoded per Parameter Encoding [RFC 3986]."
-				$header[] = OAuth::urlencode($name).'="'.OAuth::urlencode($value).'"';
+				$header[] = Libraries_OAuth_OAuth::urlencode($name).'="'.Libraries_OAuth_OAuth::urlencode($value).'"';
 			}
 		}
 
@@ -389,7 +390,7 @@ class Request {
 			}
 		}
 
-		return $as_string ? OAuth::normalize_params($params) : $params;
+		return $as_string ? Libraries_OAuth_OAuth::normalize_params($params) : $params;
 	}
 
 	/**
@@ -414,7 +415,7 @@ class Request {
 	 * @return  $this
 	 * @uses    Signature::sign
 	 */
-	public function sign(Signature $signature, Consumer $consumer, Token $token = NULL)
+	public function sign(Libraries_OAuth_Signature $signature, Libraries_OAuth_Consumer $consumer, Libraries_OAuth_Token $token = NULL)
 	{
 		// Create a new signature class from the method
 		$this->param('oauth_signature_method', $signature->name);
@@ -511,7 +512,7 @@ class Request {
 			$url = "{$url}?{$query}";
 		}
 
-		return OAuth::remote($url, $options);
+		return Libraries_OAuth_OAuth::remote($url, $options);
 	}
 
 } // End Request

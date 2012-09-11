@@ -10,26 +10,27 @@
  * @since      3.0.7
  *
  * @modified_by  Cartalyst LLC
- * @copyright   (c) 2012 Cartalyst LLC.
+ * @copyright    (c) 2012 Cartalyst LLC.
+ * @version      1.1
  */
 
-namespace SentrySocial\OAuth;
+namespace SentrySocial;
 
-abstract class Signature {
+abstract class Libraries_OAuth_Signature {
 
 	/**
 	 * Create a new signature object by name.
 	 *
-	 *     $signature = Signature::forge('HMAC-SHA1');
+	 *     $signature = Signature::make('HMAC-SHA1');
 	 *
 	 * @param   string  signature name: HMAC-SHA1, PLAINTEXT, etc
 	 * @param   array   signature options
 	 * @return  Signature
 	 */
-	public static function forge($name, array $options = NULL)
+	public static function make($name, array $options = NULL)
 	{
 		// Create the class name as a base of this class
-		$class = 'SentrySocial\\OAuth\\Signature_'.str_replace('-', '_', $name);
+		$class = 'SentrySocial\\Libraries_OAuth_Signature_'.str_replace('-', '_', $name);
 
 		return new $class($options);
 	}
@@ -64,20 +65,20 @@ abstract class Signature {
 	 * @return  string
 	 * @uses    OAuth::urlencode
 	 */
-	public function key(Consumer $consumer, Token $token = NULL)
+	public function key(Libraries_OAuth_Consumer $consumer, Libraries_OAuth_Token $token = NULL)
 	{
-		$key = OAuth::urlencode($consumer->secret).'&';
+		$key = Libraries_OAuth_OAuth::urlencode($consumer->secret).'&';
 
 		if ($token)
 		{
-			$key .= OAuth::urlencode($token->secret);
+			$key .= Libraries_OAuth_OAuth::urlencode($token->secret);
 		}
 
 		return $key;
 	}
 
-	abstract public function sign(Request $request, Consumer $consumer, Token $token = NULL);
+	abstract public function sign(Libraries_OAuth_Request $request, Libraries_OAuth_Consumer $consumer, Libraries_OAuth_Token $token = NULL);
 
-	abstract public function verify($signature, Request $request, Consumer $consumer, Token $token = NULL);
+	abstract public function verify($signature, Libraries_OAuth_Request $request, Libraries_OAuth_Consumer $consumer, Libraries_OAuth_Token $token = NULL);
 
 } // End Signature

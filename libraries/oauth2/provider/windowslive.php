@@ -9,12 +9,13 @@
  * @license    http://philsturgeon.co.uk/code/dbad-license
  *
  * @modified_by  Cartalyst LLC
- * @copyright   (c) 2012 Cartalyst LLC.
+ * @copyright    (c) 2012 Cartalyst LLC.
+ * @version      1.1
  */
 
-namespace SentrySocial\OAuth2;
+namespace SentrySocial;
 
-class Provider_Windowslive extends Provider
+class Libraries_OAuth2_Provider_Windowslive extends Libraries_OAuth2_Provider
 {
 	protected $method = 'POST';
 
@@ -53,7 +54,7 @@ class Provider_Windowslive extends Provider
 	** use of scopes, check out the document at
 	** http://msdn.microsoft.com/en-gb/library/hh243648.aspx#user
 	*********************************/
-	public function get_user_info(Token_Access $token)
+	public function get_user_info(Libraries_OAuth2_Token_Access $token)
 	{
 		// define the get user information token
 		$url = 'https://apis.live.net/v5.0/me?'.http_build_query(array(

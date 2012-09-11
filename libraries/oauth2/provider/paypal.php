@@ -9,12 +9,13 @@
  * @license    http://philsturgeon.co.uk/code/dbad-license
  *
  * @modified_by  Cartalyst LLC
- * @copyright   (c) 2012 Cartalyst LLC.
+ * @copyright    (c) 2012 Cartalyst LLC.
+ * @version      1.1
  */
 
-namespace SentrySocial\OAuth2;
+namespace SentrySocial;
 
-class Provider_Paypal extends Provider
+class Libraries_OAuth2_Provider_Paypal extends Libraries_OAuth2_Provider
 {
     /**
      * @var  string  default scope (useful if a scope is required for user info)
@@ -36,7 +37,7 @@ class Provider_Paypal extends Provider
         return 'https://identity.x.com/xidentity/oauthtokenservice';
     }
 
-    public function get_user_info(Token_Access $token)
+    public function get_user_info(Libraries_OAuth2_Token_Access $token)
     {
         $url = 'https://identity.x.com/xidentity/resources/profile/me?' . http_build_query(array(
             'oauth_token' => $token->access_token

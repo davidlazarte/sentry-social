@@ -13,12 +13,13 @@
  * @author     Fuel Development Team
  *
  * @modified_by  Cartalyst LLC
- * @copyright   (c) 2012 Cartalyst LLC.
+ * @copyright    (c) 2012 Cartalyst LLC.
+ * @version      1.1
  */
 
-namespace SentrySocial\OAuth;
+namespace SentrySocial;
 
-class Provider_Tumblr extends Provider {
+class Libraries_OAuth_Provider_Tumblr extends Libraries_OAuth_Provider {
 
 	public $name = 'tumblr';
 
@@ -37,10 +38,10 @@ class Provider_Tumblr extends Provider {
 		return 'http://www.tumblr.com/oauth/access_token';
 	}
 
-	public function get_user_info(Consumer $consumer, Token $token)
+	public function get_user_info(Libraries_OAuth_Consumer $consumer, Libraries_OAuth_Token $token)
 	{
 		// Create a new GET request with the required parameters
-		$request = Request::forge('resource', 'GET', 'http://api.tumblr.com/v2/user/info', array(
+		$request = Libraries_OAuth_Request::make('resource', 'GET', 'http://api.tumblr.com/v2/user/info', array(
 			'oauth_consumer_key' => $consumer->key,
 			'oauth_token'        => $token->access_token,
 		));

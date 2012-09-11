@@ -5,7 +5,7 @@
  * NOTICE OF LICENSE
  *
  * @package    Sentry Social
- * @version    1.0
+ * @version    1.1
  * @author     Cartalyst LLC
  * @license    http://getplatform.com/manuals/sentrysocial/license
  * @copyright  (c) 2011 - 2012, Cartalyst LLC
@@ -71,11 +71,11 @@ class SentrySocial
 		// set provider
 		if ($this->driver == 'OAuth')
 		{
-			$this->provider = OAuth\Provider::forge($provider);
+			$this->provider = Libraries_OAuth_Provider::make($provider);
 		}
 		elseif ($this->driver == 'OAuth2')
 		{
-			$this->provider = OAuth2\Provider::forge($provider, array(
+			$this->provider = Libraries_OAuth2_Provider::make($provider, array(
 				'id'     => $config['app_id'],
 				'secret' => $config['app_secret'],
 				'scope'  => (isset($config['scope'])) ? $config['scope'] : null,
@@ -92,7 +92,7 @@ class SentrySocial
 	 *
 	 * @param  string  social provider (facebook/twitter etc)
 	 */
-	public static function forge($provider = null)
+	public static function make($provider = null)
 	{
 		// make sure site is set
 		if (empty($provider))
@@ -109,7 +109,7 @@ class SentrySocial
 			throw new SentrySocialException(sprintf('Provider "%s" has no driver or does not exist.', $provider));
 		}
 
-		$class = '\SentrySocial\Driver_'.$driver;
+		$class = 'SentrySocial\\Driver_'.$driver;
 
 		return new $class($provider);
 	}

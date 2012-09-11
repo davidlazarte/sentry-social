@@ -9,11 +9,12 @@
  * @license    http://philsturgeon.co.uk/code/dbad-license
  *
  * @modified_by  Cartalyst LLC
- * @copyright   (c) 2012 Cartalyst LLC.
+ * @copyright    (c) 2012 Cartalyst LLC.
+ * @version      1.1
  */
-namespace SentrySocial\OAuth2;
+namespace SentrySocial;
 
-class Provider_Google extends Provider
+class Libraries_OAuth2_Provider_Google extends Libraries_OAuth2_Provider
 {
 	/**
 	 * @var  string  the method to use when requesting tokens
@@ -78,13 +79,13 @@ class Provider_Google extends Provider
 	{
 		if ($code === null)
 		{
-			throw new Exception(array('message' => 'Expected Authorization Code from '.ucfirst($this->name).' is missing'));
+			throw new Libraries_OAuth2_Exception(array('message' => 'Expected Authorization Code from '.ucfirst($this->name).' is missing'));
 		}
 
 		return parent::access($code, $options);
 	}
 
-	public function get_user_info(Token_Access $token)
+	public function get_user_info(Libraries_OAuth2_Token_Access $token)
 	{
 		$url = 'https://www.google.com/m8/feeds/contacts/default/full?max-results=1&alt=json&'.http_build_query(array(
 			'access_token' => $token->access_token,

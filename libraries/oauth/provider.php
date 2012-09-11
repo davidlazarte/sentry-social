@@ -10,26 +10,27 @@
  * @since      3.0.7
  *
  * @modified_by  Cartalyst LLC
- * @copyright   (c) 2012 Cartalyst LLC.
+ * @copyright    (c) 2012 Cartalyst LLC.
+ * @version      1.1
  */
 
-namespace SentrySocial\OAuth;
+namespace SentrySocial;
 
-abstract class Provider {
+abstract class Libraries_OAuth_Provider {
 
 	/**
 	 * Create a new provider.
 	 *
 	 *     // Load the Twitter provider
-	 *     $provider = Provider::forge('twitter');
+	 *     $provider = Provider::make('twitter');
 	 *
 	 * @param   string   provider name
 	 * @param   array    provider options
 	 * @return  Provider
 	 */
-	public static function forge($name, array $options = NULL)
+	public static function make($name, array $options = NULL)
 	{
-		$class = 'SentrySocial\\OAuth\\Provider_'.ucfirst(str_replace('-', '_', $name));
+		$class = 'SentrySocial\\Libraries_OAuth_Provider_'.ucfirst(str_replace('-', '_', $name));
 
 		return new $class($options);
 	}
@@ -82,7 +83,7 @@ abstract class Provider {
 		if ( ! is_object($this->signature))
 		{
 			// Convert the signature name into an object
-			$this->signature = Signature::forge($this->signature);
+			$this->signature = Libraries_OAuth_Signature::make($this->signature);
 		}
 
 		if ( ! $this->name)
@@ -140,7 +141,7 @@ abstract class Provider {
 	 *
 	 * @return  string
 	 */
-	abstract public function get_user_info(Consumer $consumer, Token $token);
+	abstract public function get_user_info(Libraries_OAuth_Consumer $consumer, Libraries_OAuth_Token $token);
 
 	/**
 	 * Ask for a request token from the OAuth provider.
@@ -152,10 +153,10 @@ abstract class Provider {
 	 * @return  Token_Request
 	 * @uses    Request_Token
 	 */
-	public function request_token(Consumer $consumer, array $params = NULL)
+	public function request_token(Libraries_OAuth_Consumer $consumer, array $params = NULL)
 	{
 		// Create a new GET request for a request token with the required parameters
-		$request = Request::forge('token', 'GET', $this->url_request_token(), array(
+		$request = Libraries_OAuth_Request::make('token', 'GET', $this->url_request_token(), array(
 			'oauth_consumer_key' => $consumer->key,
 			'oauth_callback'     => $consumer->callback,
 			'scope'     		 => is_array($consumer->scope) ? implode($this->scope_seperator, $consumer->scope) : $consumer->scope,
@@ -174,7 +175,7 @@ abstract class Provider {
 		$response = $request->execute();
 
 		// Store this token somewhere useful
-		return Token::forge('request', array(
+		return Libraries_OAuth_Token::make('request', array(
 			'access_token' => $response->param('oauth_token'),
 			'secret'       => $response->param('oauth_token_secret'),
 		));
@@ -189,10 +190,10 @@ abstract class Provider {
 	 * @param   array                additional request parameters
 	 * @return  string
 	 */
-	public function authorize_url(Token_Request $token, array $params = NULL)
+	public function authorize_url(Libraries_OAuth_Token_Request $token, array $params = NULL)
 	{
 		// Create a new GET request for a request token with the required parameters
-		$request = Request::forge('authorize', 'GET', $this->url_authorize(), array(
+		$request = Libraries_OAuth_Request::make('authorize', 'GET', $this->url_authorize(), array(
 			'oauth_token' => $token->access_token,
 		));
 
@@ -215,10 +216,10 @@ abstract class Provider {
 	 * @param   array                additional request parameters
 	 * @return  Token_Access
 	 */
-	public function access_token(Consumer $consumer, Token_Request $token, array $params = NULL)
+	public function access_token(Libraries_OAuth_Consumer $consumer, Libraries_OAuth_Token_Request $token, array $params = NULL)
 	{
 		// Create a new GET request for a request token with the required parameters
-		$request = Request::forge('access', 'GET', $this->url_access_token(), array(
+		$request = Libraries_OAuth_Request::make('access', 'GET', $this->url_access_token(), array(
 			'oauth_consumer_key' => $consumer->key,
 			'oauth_token'        => $token->access_token,
 			'oauth_verifier'     => $token->verifier,
@@ -237,7 +238,7 @@ abstract class Provider {
 		$response = $request->execute();
 
 		// Store this token somewhere useful
-		return Token::forge('access', array(
+		return Libraries_OAuth_Token::make('access', array(
 			'access_token' => $response->param('oauth_token'),
 			'secret'       => $response->param('oauth_token_secret'),
 			'uid'          => $response->param($this->uid_key) ?: \Input::get($this->uid_key),

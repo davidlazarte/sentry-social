@@ -10,14 +10,15 @@
  * @since      3.0.7
  *
  * @modified_by  Cartalyst LLC
- * @copyright   (c) 2012 Cartalyst LLC.
+ * @copyright    (c) 2012 Cartalyst LLC.
+ * @version      1.1
  */
 
-namespace SentrySocial\OAuth;
+namespace SentrySocial;
 
-class Exception extends \Exception {}
+use Exception;
 
-abstract class OAuth {
+abstract class Libraries_OAuth_OAuth {
 
 	/**
 	 * @var  string  OAuth compliance version
@@ -82,7 +83,7 @@ abstract class OAuth {
 		if (is_array($input))
 		{
 			// Encode the values of the array
-			return array_map(array('SentrySocial\\OAuth\\OAuth', 'urlencode'), $input);
+			return array_map(array('SentrySocial\\Libraries_OAuth_OAuth', 'urlencode'), $input);
 		}
 
 		// Encode the input
@@ -109,7 +110,7 @@ abstract class OAuth {
 		if (is_array($input))
 		{
 			// Decode the values of the array
-			return array_map(array('SentrySocial\\OAuth\\OAuth', 'urldecode'), $input);
+			return array_map(array('SentrySocial\\Libraries_OAuth_OAuth', 'urldecode'), $input);
 		}
 
 		// Decode the input
@@ -136,8 +137,8 @@ abstract class OAuth {
 		}
 
 		// Encode the parameter keys and values
-		$keys   = OAuth::urlencode(array_keys($params));
-		$values = OAuth::urlencode(array_values($params));
+		$keys   = Libraries_OAuth_OAuth::urlencode(array_keys($params));
+		$values = Libraries_OAuth_OAuth::urlencode(array_values($params));
 
 		// Recombine the parameters
 		$params = array_combine($keys, $values);
@@ -193,7 +194,7 @@ abstract class OAuth {
 			list($url) = explode('?', $url, 2);
 
 			// Parse the query string as request parameters
-			$params = OAuth::parse_params($query);
+			$params = Libraries_OAuth_OAuth::parse_params($query);
 		}
 		else
 		{
@@ -231,8 +232,8 @@ abstract class OAuth {
 			list($name, $value) = explode('=', $param, 2);
 
 			// Decode the name and value
-			$name  = OAuth::urldecode($name);
-			$value = OAuth::urldecode($value);
+			$name  = Libraries_OAuth_OAuth::urldecode($name);
+			$value = Libraries_OAuth_OAuth::urldecode($value);
 
 			if (isset($parsed[$name]))
 			{

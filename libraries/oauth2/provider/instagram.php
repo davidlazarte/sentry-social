@@ -9,12 +9,13 @@
  * @license    http://philsturgeon.co.uk/code/dbad-license
  *
  * @modified_by  Cartalyst LLC
- * @copyright   (c) 2012 Cartalyst LLC.
+ * @copyright    (c) 2012 Cartalyst LLC.
+ * @version      1.1
  */
 
-namespace SentrySocial\OAuth2;
+namespace SentrySocial;
 
-class Provider_Instagram extends Provider
+class Libraries_OAuth2_Provider_Instagram extends Libraries_OAuth2_Provider
 {
 	/**
 	 * @var  string  scope separator, most use "," but some like Google are spaces
@@ -51,7 +52,7 @@ class Provider_Instagram extends Provider
 		parent::__construct($options);
 	}
 
-	public function get_user_info(Token_Access $token)
+	public function get_user_info(Libraries_OAuth2_Token_Access $token)
 	{
 		$user = $token->user;
 

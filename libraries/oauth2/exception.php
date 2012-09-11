@@ -7,12 +7,13 @@
  * @author Update to draft v10 by Edison Wong <hswong3i@pantarei-design.com>.
  *
  * @modified_by  Cartalyst LLC
- * @copyright   (c) 2012 Cartalyst LLC.
+ * @copyright    (c) 2012 Cartalyst LLC.
+ * @version      1.1
  */
 
-namespace SentrySocial\OAuth2;
+namespace SentrySocial;
 
-class Exception extends \Exception {
+class Libraries_OAuth2_Exception extends \Exception {
 
 	/**
 	 * The result from the API server that represents the exception information.

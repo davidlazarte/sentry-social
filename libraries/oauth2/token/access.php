@@ -8,12 +8,13 @@
  * @copyright  (c) 2012 HappyNinjas Ltd
  *
  * @modified_by  Cartalyst LLC
- * @copyright   (c) 2012 Cartalyst LLC.
+ * @copyright    (c) 2012 Cartalyst LLC.
+ * @version      1.1
  */
 
-namespace SentrySocial\OAuth2;
+namespace SentrySocial;
 
-class Token_Access extends Token
+class Libraries_OAuth2_Token_Access extends Libraries_OAuth2_Token
 {
 	/**
 	 * @var  string  access_token
@@ -50,7 +51,7 @@ class Token_Access extends Token
 	{
 		if ( ! isset($options['access_token']))
 		{
-			throw new Exception(array('message' => 'Required option not passed: access_token'.PHP_EOL.print_r($options, true)));
+			throw new Libraries_OAuth2_Exception(array('message' => 'Required option not passed: access_token'.PHP_EOL.print_r($options, true)));
 		}
 
 		// if ( ! isset($options['expires_in']) and ! isset($options['expires']))

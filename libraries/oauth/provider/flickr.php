@@ -16,12 +16,13 @@
  * @since      3.0.7
  *
  * @modified_by  Cartalyst LLC
- * @copyright   (c) 2012 Cartalyst LLC.
+ * @copyright    (c) 2012 Cartalyst LLC.
+ * @version      1.1
  */
 
-namespace SentrySocial\OAuth;
+namespace SentrySocial;
 
-class Provider_Flickr extends Provider {
+class Libraries_OAuth_Provider_Flickr extends Libraries_OAuth_Provider {
 
 	public $name = 'flickr';
 
@@ -40,10 +41,10 @@ class Provider_Flickr extends Provider {
 		return 'http://www.flickr.com/services/oauth/access_token';
 	}
 
-	public function get_user_info(Consumer $consumer, Token $token)
+	public function get_user_info(Libraries_OAuth_Consumer $consumer, Libraries_OAuth_Token $token)
 	{
 		// Create a new GET request with the required parameters
-		$request = Request::forge('resource', 'GET', 'http://api.flickr.com/services/rest', array(
+		$request = Libraries_OAuth_Request::make('resource', 'GET', 'http://api.flickr.com/services/rest', array(
 			'oauth_consumer_key' => $consumer->key,
 			'oauth_token'        => $token->access_token,
 			'nojsoncallback'     => 1,

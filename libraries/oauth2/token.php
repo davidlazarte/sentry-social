@@ -8,25 +8,26 @@
  * @copyright  (c) 2012 HappyNinjas Ltd
  *
  * @modified_by  Cartalyst LLC
- * @copyright   (c) 2012 Cartalyst LLC.
+ * @copyright    (c) 2012 Cartalyst LLC.
+ * @version      1.1
  */
 
-namespace SentrySocial\OAuth2;
+namespace SentrySocial;
 
-abstract class Token {
+abstract class Libraries_OAuth2_Token {
 
 	/**
 	 * Create a new token object.
 	 *
-	 *     $token = Token::forge('access', $name);
+	 *     $token = Token::make('access', $name);
 	 *
 	 * @param   string  token type
 	 * @param   array   token options
 	 * @return  Token
 	 */
-	public static function forge($type = 'access', array $options = null)
+	public static function make($type = 'access', array $options = null)
 	{
-		$class = 'SentrySocial\\OAuth2\\Token_'.ucfirst(str_replace('-', '_', $type));
+		$class = 'SentrySocial\\Libraries_OAuth2_Token_'.ucfirst(str_replace('-', '_', $type));
 
 		return new $class($options);
 	}
