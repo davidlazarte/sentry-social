@@ -1,7 +1,6 @@
 {
-    "sections" : [
-        "introduction",
-        "usage",
-        "license"
-    ]
+	"sections" : [
+		"introduction",
+		"usage"
+	]
 }

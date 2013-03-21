@@ -1,25 +1,15 @@
-<div class="hero-table">
+### Why Sentry Social?
 
-	<div class="row">
-
-		<div class="span12">
-			<h3>Why Sentry Social?</h3>
-			<hr>
-
-			<p>SentrySocial is a Laravel bundle used to add social authentication to the Sentry Authentication bundle using OAuth and OAuth2.  Out of the box it comes with several popular services you can authenticate through, such as Facebook, Twitter, Google and more. Here is a list of providers currently supported.</p>
-
-
-		</div>
-
-	</div>
-
-</div>
-
-###Features
+Sentry Social is a Laravel 3 bundle used to add social authentication to the Sentry
+Authentication bundle using OAuth and OAuth2.  Out of the box it comes with several
+popular services you can authenticate through, such as Facebook, Twitter, Google
+and many more. Here is a list of providers currently supported.
 
 ----------
 
-####OAuth
+### Features
+
+##### OAuth
 - Dropbox
 - Flickr
 - LinkedIn
@@ -27,7 +17,7 @@
 - Twitter
 - Vimeo
 
-####OAuth2
+##### OAuth2
 - Blooie
 - Facebook
 - Foursquare

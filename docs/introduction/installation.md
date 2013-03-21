@@ -1,12 +1,13 @@
-###Installation
+### Installation
 
-----------
+Once you have SentrySocial downloaded, you will want to put all the `sentrysocial`
+folder in your bundles folder.
 
-Once you have SentrySocial downloaded, you will want to put all the `sentrysocial` folder in your bundles folder.  Then you will want to add the following lines to your `application/bundles.php` file to load and run sentry social.
+Then add the following to your `application/bundles.php` file
 
 	'sentrysocial' => array(
-		'auto'     => true,
-		'handles'  => 'sentrysocial'
+		'auto'    => true,
+		'handles' => 'sentrysocial'
 	),
 
 Installing the table for SentrySocial is as simple as running its migration.

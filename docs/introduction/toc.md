@@ -1,5 +1,5 @@
 ##Introduction
 
-* [Overview](/sentrysocial/introduction/)
+* [Overview](/sentrysocial)
 * [Download](/sentrysocial/introduction/purchase)
 * [Installation](/sentrysocial/introduction/installation)
