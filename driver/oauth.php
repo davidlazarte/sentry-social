@@ -112,9 +112,9 @@ class Driver_OAuth extends SentrySocial
 	 *
 	 * @return  array  user information
 	 */
-	 public function get_user_info($token)
-	 {
-	 	return $this->provider->get_user_info($this->consumer, $token);
-	 }
+	public function get_user_info($token)
+	{
+		return $this->provider->get_user_info($this->consumer, $token);
+	}
 
 }

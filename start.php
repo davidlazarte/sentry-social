@@ -16,7 +16,7 @@
 
 // Autoload classes
 Autoloader::namespaces(array(
-    'SentrySocial' => Bundle::path('sentrysocial'),
+	'SentrySocial' => Bundle::path('sentrysocial'),
 ));
 
 // map the auth controller to extend

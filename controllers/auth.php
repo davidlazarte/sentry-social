@@ -103,7 +103,6 @@ class SentrySocial_Auth_Controller extends Controller
 		    // store/set and display caught exceptions such as a suspended user with limit attempts feature.
 		   	return Redirect::to(Config::get('sentrysocial::sentrysocial.url.register'))->with('login_error', $e->getMessage());
 		}
-
-
 	}
+
 }

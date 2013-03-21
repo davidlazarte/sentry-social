@@ -20,6 +20,7 @@ return array(
 	 * URL's
 	 */
 	'url' => array(
+
 		// request callback url
 		'callback'      => 'sentrysocial/auth/callback',
 
@@ -31,6 +32,7 @@ return array(
 
 		// authenticated
 		'authenticated' => '',
+
 	),
 
 
@@ -56,5 +58,6 @@ return array(
 		 *	),
 		 */
 
-	)
+	),
+
 );
