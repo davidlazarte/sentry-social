@@ -1,6 +1,6 @@
 {
 	"name": "cartalyst/sentry-social",
-	"description": "Social Integration with SEntry",
+	"description": "Social Integration with Sentry",
 	"keywords": ["auth", "security", "laravel", "codeigniter", "fuelphp"],
 	"license": "BSD License (3-clause)",
 	"authors": [

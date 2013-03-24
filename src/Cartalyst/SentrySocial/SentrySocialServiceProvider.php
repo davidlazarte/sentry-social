@@ -27,11 +27,21 @@ class SentrySocialServiceProvider extends ServiceProvider {
 	 */
 	public function register()
 	{
+		$this->registerServiceFactory();
+
+		$this->registerSentrySocial();
+	}
+
+	protected function registerServiceFactory()
+	{
 		$this->app['sentry.social.factory'] = $this->app->share(function($app)
 		{
 			return new ServiceFactory;
 		});
+	}
 
+	protected function registerSentrySocial()
+	{
 		$this->app['sentry.social'] = $this->app->share(function($app)
 		{
 			return new Manager($app['sentry.social.factory']);
