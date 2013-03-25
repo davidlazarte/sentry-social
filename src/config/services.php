@@ -58,7 +58,7 @@ return array(
 		'facebook' => array(
 			'key'    => '',
 			'secret' => '',
-			'scopes' => array(),
+			'scopes' => array('email'),
 		),
 
 		'fitbit' => array(
@@ -81,13 +81,13 @@ return array(
 		'google' => array(
 			'key'    => '',
 			'secret' => '',
-			'scopes' => array(),
+			'scopes' => array('userinfo_profile', 'userinfo_email'),
 		),
 
 		'microsoft' => array(
 			'key'    => '',
 			'secret' => '',
-			'scopes' => array(),
+			'scopes' => array('emails'),
 		),
 
 		'soundcloud' => array(
