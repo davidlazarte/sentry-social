@@ -19,7 +19,7 @@
  */
 
 use OAuth\Common\Service\ServiceInterface as BaseServiceInterface;
-å
+
 interface ServiceInterface extends BaseServiceInterface {
 
 	/**

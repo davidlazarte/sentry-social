@@ -29,7 +29,7 @@ class SentrySocial extends Facade {
 	 */
 	protected static function getFacadeAccessor()
 	{
-		return 'sentry.social';
+		return 'sentrysocial';
 	}
 
 }

@@ -22,24 +22,33 @@ use Illuminate\Routing\Controllers\Controller;
 
 class OAuthController extends Controller {
 
+	public function getIndex()
+	{
+		foreach (\Config::get('cartalyst/sentrysocial::services.connections') as $service => $config)
+		{
+			echo "<p><a href=\"".\URL::to("oauth/authorize/{$service}")."\">Connect with [{$service}]</a></p>";
+		}
+	}
+
 	/**
 	 * Shows a link to authenticate a service.
 	 *
 	 * @param  string  $service
 	 * @return string
 	 */
-	public function indexAction($service)
+	public function getAuthorize($service)
 	{
-		$url = \URL::to(\Request::getPathInfo(), array('go' => 'go'));
-		return "<a href=\"{$url}\">Login with {$service}</a>";
+		$service = \SentrySocial::make($service, \URL::to("oauth/callback/{$service}"));
+
+		return \Redirect::to((string) $service->getAuthorizationUri());
 	}
 
 	/**
 	 * Handles authentication
 	 */
-	public function authenticateAction($service)
+	public function getCallback($service)
 	{
-		$service = \SentrySocial::make($service);
+		$service = \SentrySocial::make($service, \URL::to("oauth/callback/{$service}"));
 
 		// If we have an access code
 		if ($code = \Request::input('code'))
@@ -56,10 +65,6 @@ class OAuthController extends Controller {
 			{
 
 			}
-		}
-		elseif (\Request::input('go') == 'go')
-		{
-			return \Redirect::to($service->getAuthorizationUri());
 		}
 		else
 		{

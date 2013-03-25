@@ -73,7 +73,7 @@ class Facebook extends BaseService implements ServiceInterface {
 	 */
 	public function getUserInfo()
 	{
-		if ($this->cachedInfo === null)
+		if (empty($this->cachedInfo))
 		{
 			$this->cachedInfo = reset(json_decode($this->request('users/lookup.json', true));
 		}

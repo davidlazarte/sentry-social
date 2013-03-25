@@ -81,7 +81,7 @@ class FitBit extends BaseService implements ServiceInterface {
 	 */
 	public function getUserInfo()
 	{
-		if ($this->cachedInfo === null)
+		if (empty($this->cachedInfo))
 		{
 			$this->cachedInfo = json_decode($this->request('user/-/profile.json', true);
 		}

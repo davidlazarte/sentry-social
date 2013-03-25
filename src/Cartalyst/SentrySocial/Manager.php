@@ -123,9 +123,21 @@ class Manager {
 	 * @param  Cartalyst\SentrySocial\Services\ServiceInterface  $service
 	 * @return Cartalyst\Sentry\Users\UserInterface  $user
 	 */
-	public function authenticate(ServiceInterface $service)
+	public function authenticate(ServiceInterface $service, $code)
 	{
+		$service->requestAccessToken($code);
 
+		$uid = $service->getUniqueIdentifier();
+		$email = $service->getEmail();
+
+		if ($email === null)
+		{
+			$email = "$uid@null";
+		}
+
+		var_dump([$uid, $email]);
+
+		// var_dump($service->getUserInfo());
 	}
 
 	/**
@@ -160,7 +172,7 @@ class Manager {
 		}
 
 		// Validate the connection
-		if ( ! isset($connection['key']) or ! isset($connection['secret'] or ! isset($connection['service'])))
+		if ( ! isset($connection['key']) or ! isset($connection['secret']) or ! isset($connection['service']))
 		{
 			throw new \RuntimeException("Invalid connection configuration passed.");
 		}

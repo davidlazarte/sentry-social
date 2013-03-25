@@ -26,7 +26,7 @@ use OAuth\OAuth1\Service\OAuth1ServiceInterface;
 use OAuth\OAuth1\Signature\Signature as OAuth1Signature;
 use OAuth\OAuth2\Service\OAuth2ServiceInterface;
 
-class ServiceFactory extends \OAuth\ServiceFactory {
+class ServiceProvider extends \OAuth\ServiceFactory {
 
 	/**
 	 * An array of custom OAuth2 services.
@@ -41,6 +41,18 @@ class ServiceFactory extends \OAuth\ServiceFactory {
 	 * @var array
 	 */
 	protected $oauth1Services = array();
+
+	/** @var \OAuth\Common\Http\Client\ClientInterface */
+    private $httpClient;
+
+    public function __construct($httpClientType = 'stream')
+    {
+        if( !isset(static::$httpClientMap[$httpClientType] ) ) {
+            throw new Common\Exception\Exception('Invalid http client type passed to OAuth\\ServiceFactory::__construct');
+        }
+
+        $this->httpClient = new static::$httpClientMap[$httpClientType];
+    }
 
 	/**
 	 * @param $serviceName string name of service to create

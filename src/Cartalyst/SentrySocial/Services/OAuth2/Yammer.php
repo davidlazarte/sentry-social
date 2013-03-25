@@ -82,7 +82,7 @@ class Yammer extends BaseService implements ServiceInterface {
 	 */
 	public function getUserInfo()
 	{
-		if ($this->cachedInfo === null)
+		if (empty($this->cachedInfo))
 		{
 			$apiResult = json_decode($this->request('users/current.json'), true);
 			$this->cachedInfo = $apiResult['user'];

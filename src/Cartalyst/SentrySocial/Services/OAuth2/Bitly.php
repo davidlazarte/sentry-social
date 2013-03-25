@@ -74,7 +74,7 @@ class Bitly extends BaseService implements ServiceInterface {
 	 */
 	public function getUserInfo()
 	{
-		if ($this->cachedInfo === null)
+		if (empty($this->cachedInfo))
 		{
 			$apiResult = json_decode($this->request('user/info'), true);
 			$this->cachedInfo = $apiResult['data'];

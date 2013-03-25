@@ -74,7 +74,7 @@ class Foursquare extends BaseService implements ServiceInterface {
 	 */
 	public function getUserInfo()
 	{
-		if ($this->cachedInfo === null)
+		if (empty($this->cachedInfo))
 		{
 			$apiResult = json_decode($this->request('users/self'), true);
 			$this->cachedInfo = $apiResult['response']['user'];

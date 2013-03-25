@@ -18,12 +18,12 @@
  * @link       http://cartalyst.com
  */
 
+use Cartalyst\SentrySocial\Services\ServiceProvider;
 use Cartalyst\SentrySocial\Storage\EloquentStorage;
 use OAuth\Common\Storage\Memory as MemoryStorage;
 use OAuth\Common\Storage\Session as SessionStorage;
-use illuminate\Support\ServiceProvider;
 
-class SentrySocialServiceProvider extends ServiceProvider {
+class SentrySocialServiceProvider extends \Illuminate\Support\ServiceProvider {
 
 	/**
 	 * Boot the service provider.
@@ -33,6 +33,11 @@ class SentrySocialServiceProvider extends ServiceProvider {
 	public function boot()
 	{
 		$this->package('cartalyst/sentrysocial', 'cartalyst/sentrysocial');
+
+		foreach ($this->app['config']['cartalyst/sentrysocial::services.connections'] as $name => $connection)
+		{
+			$this->app['sentrysocial']->register($name, $connection);
+		}
 	}
 
 	/**

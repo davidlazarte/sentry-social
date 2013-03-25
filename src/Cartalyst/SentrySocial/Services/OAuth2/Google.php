@@ -80,7 +80,7 @@ class Google extends BaseService implements ServiceInterface {
 	 */
 	public function getUserInfo()
 	{
-		if ($this->cachedInfo === null)
+		if (empty($this->cachedInfo))
 		{
 			$this->cachedInfo = json_decode($this->request('https://www.googleapis.com/oauth2/v1/userinfo'), true);
 		}

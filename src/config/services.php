@@ -101,7 +101,7 @@ return array(
 			'secret' => '',
 		),
 
-		'yammer' => arrsay(
+		'yammer' => array(
 			'key'    => '',
 			'secret' => '',
 			'scopes' => array(),
