@@ -18,6 +18,8 @@
  * @link       http://cartalyst.com
  */
 
+use Cartalyst\SentrySocial\Services\ServiceInterface;
+use Cartalyst\SentrySocial\Services\ServiceProvider;
 use OAuth\Common\Consumer\Credentials;
 
 class Manager {
@@ -26,9 +28,9 @@ class Manager {
 	 * The Service Factory, used for creating
 	 * service instances.
 	 *
-	 * @var Cartalyst\SentrySocial\ServiceFactory
+	 * @var Cartalyst\SentrySocial\ServiceProvider
 	 */
-	protected $serviceFactory;
+	protected $serviceProvider;
 
 	/**
 	 * Array of registered connections.
@@ -40,13 +42,13 @@ class Manager {
 	/**
 	 * Create a new Sentry Social manager.
 	 *
-	 * @param  Cartalyst\Sentry\ServiceFactory  $serviceFactory
+	 * @param  Cartalyst\Sentry\ServiceProvider  $serviceProvider
 	 * @param  array  $connections
 	 * @return void
 	 */
-	public function __construct(ServiceFactory $serviceFactory = null, array $connections = array())
+	public function __construct(ServiceProvider $serviceProvider = null, array $connections = array())
 	{
-		$this->serviceFactory = $serviceFactory ?: new ServiceFactory;
+		$this->serviceProvider = $serviceProvider ?: new ServiceProvider;
 
 		foreach ($connections as $name => $connection)
 		{
@@ -72,37 +74,14 @@ class Manager {
 	}
 
 	/**
-	 * Makes a new service from a connection with
-	 * the given name.
-	 *
-	 * @param  string  $name
-	 * @param  string  $callback
-	 * @return OAuth\Common\Service\ServiceInterface
-	 * @todo   Add proper storage options (illuminate/database for example).
-	 */
-	public function make($name, $callback = null)
-	{
-		$connection  = $this->getConnection($name, $callback);
-
-		$credentials = $this->createCredentials($connection['key'], $connection['secret'], $callback);
-
-		// @todo, make our own storage engines.
-		$storage = new \OAuth\Common\Storage\Session(true, 'oauth_token_'.$connection['service']);
-
-		$scopes = isset($connection['scopes']) ? $connection['scopes'] : array();
-
-		return $this->serviceFactory->createService($connection['service'], $credentials, $storage, $scopes);
-	}
-
-	/**
 	 * Register a custom OAuth2 service with the Service Factory.
 	 *
 	 * @param  string  $className
 	 * @return void
 	 */
-	public function registerOauth2Service($className)
+	public function registerOAuth2Service($className)
 	{
-		$this->serviceFactory->registerOauth2Service($className);
+		$this->serviceProvider->registerOAuth2Service($className);
 	}
 
 	/**
@@ -111,9 +90,42 @@ class Manager {
 	 * @param  string  $className
 	 * @return void
 	 */
-	public function registerOauth1Service($className)
+	public function registerOAuth1Service($className)
 	{
-		$this->serviceFactory->registerOauth1Service($className);
+		$this->serviceProvider->registerOAuth1Service($className);
+	}
+
+	/**
+	 * Makes a new service from a connection with
+	 * the given name.
+	 *
+	 * @param  string  $name
+	 * @param  string  $callback
+	 * @return Cartalyst\SentrySocial\Services\ServiceInterface
+	 * @todo   Add proper storage options (illuminate/database for example).
+	 */
+	public function make($name, $callback = null)
+	{
+		$connection  = $this->getConnection($name, $callback);
+
+		$credentials = $this->createCredentials($connection['key'], $connection['secret'], $callback);
+
+		$storage = $this->createStorage($connection['service']);
+
+		$scopes = isset($connection['scopes']) ? $connection['scopes'] : array();
+
+		return $this->serviceProvider->createService($connection['service'], $credentials, $storage, $scopes);
+	}
+
+	/**
+	 * Authenticates the given Sentry Social OAuth service.
+	 *
+	 * @param  Cartalyst\SentrySocial\Services\ServiceInterface  $service
+	 * @return Cartalyst\Sentry\Users\UserInterface  $user
+	 */
+	public function authenticate(ServiceInterface $service)
+	{
+
 	}
 
 	/**
@@ -186,6 +198,11 @@ class Manager {
 	protected function createCredentials($key, $secret, $callback)
 	{
 		return new Credentials($key, $secret, $callback);
+	}
+
+	protected function createStorage($service)
+	{
+		return new \OAuth\Common\Storage\Session(true, 'oauth_token_'.$service);
 	}
 
 }
