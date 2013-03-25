@@ -1,4 +1,4 @@
-<?php namespace Cartalyst\SentrySocial;
+<?php namespace Cartalyst\SentrySocial\Controllers;
 /**
  * Part of the Sentry Social package.
  *
