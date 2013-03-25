@@ -53,48 +53,42 @@ class ServiceFactory extends \OAuth\ServiceFactory {
 	public function createService($serviceName, Credentials $credentials, TokenStorageInterface $storage, $scopes = array())
 	{
 		// Try an OAuth2 service first
-        if (isset($this->oauth2Services[$serviceName]))
-        {
-        	$className = $this->oauth2Services[$serviceName];
+		if ($className = $this->getOAuth2ClassName($serviceName))
+		{
+			// Resolve scopes from the service
+			$resolvedScopes = array();
+			$reflClass = new \ReflectionClass($className);
+			$constants = $reflClass->getConstants();
 
-            // Resolve scopes from the service
-            $resolvedScopes = array();
-            $reflClass = new \ReflectionClass($className);
-            $constants = $reflClass->getConstants();
+			foreach ($scopes as $scope)
+			{
+				$key = strtoupper('SCOPE_'.$scope);
 
-            foreach ($scopes as $scope)
-            {
-                $key = strtoupper('SCOPE_'.$scope);
+				if (array_key_exists($key, $constants))
+				{
+					$resolvedScopes[] = $constants[$key];
+				}
+				else
+				{
+					$resolvedScopes[] = $scope;
+				}
+			}
 
-                if (array_key_exists($key, $constants))
-                {
-                    $resolvedScopes[] = $constants[$key];
-                }
-                else
-                {
-                    $resolvedScopes[] = $scope;
-                }
-            }
+			return new $className($credentials, $this->httpClient, $storage, $resolvedScopes);
+		}
 
-            return new $className($credentials, $this->httpClient, $storage, $resolvedScopes);
-        }
+		// Now, try an OAuth 1 service
+		if ($className = $this->getOAuth1ClassName($serviceName))
+		{
+			if( ! empty($scopes))
+			{
+				throw new OAuthException('Scopes passed to ServiceFactory::createService but an OAuth1 service was requested.');
+			}
 
-        // Now, try an OAuth 1 service
-        if (isset($this->oauth1Services[$serviceName]))
-        {
-        	$className = $this->oauth1Services[$serviceName];
+			$signature = new OAuth1Signature($credentials);
 
-        	if( ! empty($scopes))
-        	{
-                throw new OAuthException('Scopes passed to ServiceFactory::createService but an OAuth1 service was requested.');
-            }
-
-            $signature = new OAuth1Signature($credentials);
-
-            return new $className($credentials, $this->httpClient, $storage, $signature);
-        }
-
-        return parent::createService($serviceName, $credentials, $storage, $scopes);
+			return new $className($credentials, $this->httpClient, $storage, $signature);
+		}
 	}
 
 	/**
@@ -103,7 +97,7 @@ class ServiceFactory extends \OAuth\ServiceFactory {
 	 * @param  string  $className
 	 * @return void
 	 */
-	public function registerOauth2Service($className)
+	public function registerOAuth2Service($className)
 	{
 		$this->oauth2Services[$this->getServiceName($className)] = $className;
 	}
@@ -114,7 +108,7 @@ class ServiceFactory extends \OAuth\ServiceFactory {
 	 * @param  string  $className
 	 * @return void
 	 */
-	public function registerOauth1Service($className)
+	public function registerOAuth1Service($className)
 	{
 		$this->oauth1Services[$this->getServiceName($className)] = $className;
 	}
@@ -128,6 +122,42 @@ class ServiceFactory extends \OAuth\ServiceFactory {
 	protected function getServiceName($className)
 	{
 		return basename(str_replace('\\', '/', $className));
+	}
+
+	/**
+	 * Returns a potential classname for the given OAuth2
+	 * service name.
+	 *
+	 * @param  string  $serviceName
+	 * @return string
+	 */
+	protected function getOAuth2ClassName($serviceName)
+	{
+		if (isset($this->oauth2Services[$serviceName]))
+		{
+			return $this->oauth2Services[$serviceName];
+		}
+
+		$className = "\\Cartalyst\\SentrySocial\\Services\\OAuth2\\{$serviceName}";
+		if (class_exists($className)) return $className;
+	}
+
+	/**
+	 * Returns a potential classname for the given OAuth1
+	 * service name.
+	 *
+	 * @param  string  $serviceName
+	 * @return string
+	 */
+	protected function getOAuth1ClassName($serviceName)
+	{
+		if (isset($this->oauth1Services[$serviceName]))
+		{
+			return $this->oauth1Services[$serviceName];
+		}
+
+		$className = "\\Cartalyst\\SentrySocial\\Services\\OAuth1\\{$serviceName}";
+		if (class_exists($className)) return $className;
 	}
 
 }

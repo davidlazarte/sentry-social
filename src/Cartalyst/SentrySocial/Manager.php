@@ -18,6 +18,7 @@
  * @link       http://cartalyst.com
  */
 
+use Cartalyst\SentrySocial\Services\ServiceInterface;
 use OAuth\Common\Consumer\Credentials;
 
 class Manager {
@@ -72,12 +73,34 @@ class Manager {
 	}
 
 	/**
+	 * Register a custom OAuth2 service with the Service Factory.
+	 *
+	 * @param  string  $className
+	 * @return void
+	 */
+	public function registerOAuth2Service($className)
+	{
+		$this->serviceFactory->registerOAuth2Service($className);
+	}
+
+	/**
+	 * Register a custom OAuth1 service with the Service Factory.
+	 *
+	 * @param  string  $className
+	 * @return void
+	 */
+	public function registerOAuth1Service($className)
+	{
+		$this->serviceFactory->registerOAuth1Service($className);
+	}
+
+	/**
 	 * Makes a new service from a connection with
 	 * the given name.
 	 *
 	 * @param  string  $name
 	 * @param  string  $callback
-	 * @return OAuth\Common\Service\ServiceInterface
+	 * @return Cartalyst\SentrySocial\Services\ServiceInterface
 	 * @todo   Add proper storage options (illuminate/database for example).
 	 */
 	public function make($name, $callback = null)
@@ -95,25 +118,14 @@ class Manager {
 	}
 
 	/**
-	 * Register a custom OAuth2 service with the Service Factory.
+	 * Authenticates the given Sentry Social OAuth service.
 	 *
-	 * @param  string  $className
-	 * @return void
+	 * @param  Cartalyst\SentrySocial\Services\ServiceInterface  $service
+	 * @return Cartalyst\Sentry\Users\UserInterface  $user
 	 */
-	public function registerOauth2Service($className)
+	public function authenticate(ServiceInterface $service)
 	{
-		$this->serviceFactory->registerOauth2Service($className);
-	}
 
-	/**
-	 * Register a custom OAuth1 service with the Service Factory.
-	 *
-	 * @param  string  $className
-	 * @return void
-	 */
-	public function registerOauth1Service($className)
-	{
-		$this->serviceFactory->registerOauth1Service($className);
 	}
 
 	/**
