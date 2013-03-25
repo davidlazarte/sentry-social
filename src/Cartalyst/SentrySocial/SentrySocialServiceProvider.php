@@ -21,6 +21,7 @@
 use Cartalyst\SentrySocial\Storage\EloquentStorage;
 use OAuth\Common\Storage\Memory as MemoryStorage;
 use OAuth\Common\Storage\Session as SessionStorage;
+use illuminate\Support\ServiceProvider;
 
 class SentrySocialServiceProvider extends ServiceProvider {
 
@@ -31,7 +32,7 @@ class SentrySocialServiceProvider extends ServiceProvider {
 	 */
 	public function boot()
 	{
-		$this->package('cartalyst/sentry.social', 'cartalyst/sentry.social');
+		$this->package('cartalyst/sentrysocial', 'cartalyst/sentrysocial');
 	}
 
 	/**
@@ -57,7 +58,7 @@ class SentrySocialServiceProvider extends ServiceProvider {
 	 */
 	protected function registerServiceProvider()
 	{
-		$this->app['sentry.social.provider'] = $this->app->share(function($app)
+		$this->app['sentrysocial.provider'] = $this->app->share(function($app)
 		{
 			return new ServiceProvider;
 		});
@@ -67,14 +68,14 @@ class SentrySocialServiceProvider extends ServiceProvider {
 	{
 		// We are not sharing a singleton, we will return
 		// a new instance each time.
-		$this->app['sentry.social.storage'] = function($app)
+		$this->app['sentrysocial.storage'] = function($app)
 		{
-			$storage = $app['config']['cartalyst/sentry.social::storage'];
+			$storage = $app['config']['cartalyst/sentrysocial::storage'];
 
 			switch ($storage)
 			{
 				case 'eloquent':
-					$model = $app['config']['cartalyst/sentry.social::model'];
+					$model = $app['config']['cartalyst/sentrysocial::model'];
 					return new EloquentStorage($model);
 
 				// @todo Add an illuminate/session storage engine.
@@ -88,7 +89,7 @@ class SentrySocialServiceProvider extends ServiceProvider {
 			}
 
 			throw new \InvalidArgumentException("Invalid storage driver [$storage] chosen.");
-		}
+		};
 	}
 
 	/**
@@ -98,9 +99,9 @@ class SentrySocialServiceProvider extends ServiceProvider {
 	 */
 	protected function registerSentrySocial()
 	{
-		$this->app['sentry.social'] = $this->app->share(function($app)
+		$this->app['sentrysocial'] = $this->app->share(function($app)
 		{
-			return new Manager($app['sentry.social.provider']);
+			return new Manager($app['sentrysocial.provider']);
 		});
 	}
 
