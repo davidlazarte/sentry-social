@@ -1,5 +1,5 @@
 ##Usage
 
-* [Configuration](/sentrysocial/usage/configuration)
-* [Authenticate](/sentrysocial/usage/authenticate)
-* [Registration](/sentrysocial/usage/registration)
+* [Configuration](/sentry-social-1/usage/configuration)
+* [Authenticate](/sentry-social-1/usage/authenticate)
+* [Registration](/sentry-social-1/usage/registration)
