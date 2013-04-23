@@ -24,11 +24,39 @@ use OAuth\OAuth2\Service\GitHub as BaseService;
 class GitHub extends BaseService implements ServiceInterface {
 
 	/**
+	 * THe service name.
+	 *
+	 * @var string
+	 */
+	protected $serviceName;
+
+	/**
 	 * Array of cached user info.
 	 *
 	 * @var array
 	 */
 	protected $cachedInfo = array();
+
+	/**
+	 * Gets the service name, or "alias".
+	 *
+	 * @return string
+	 */
+	public function getServiceName()
+	{
+		return $this->serviceName;
+	}
+
+	/**
+	 * Sets the service name, or "alias".
+	 *
+	 * @param  string  $serviceName
+	 * @return void
+	 */
+	public function setServiceName($serviceName)
+	{
+		$this->serviceName = $serviceName;
+	}
 
 	/**
 	 * Returns the user's unique identifier on the service.

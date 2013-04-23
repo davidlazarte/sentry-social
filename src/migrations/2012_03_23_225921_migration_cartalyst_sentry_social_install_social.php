@@ -33,12 +33,39 @@ class MigrationCartalystSentrySocialInstallSocial extends Migration {
 		{
 			$table->increments('id');
 			$table->integer('user_id')->unsigned();
-			$table->string('provider');
+			$table->string('service');
 			$table->string('uid');
-			$table->string('token');
-			$table->string('secret');
-			$table->string('expires');
 			$table->timestamps();
+
+			$table->unique(array('user_id', 'service'));
+			$table->unique(array('service', 'uid'));
+
+			// $table->integer('user_id')->unsigned();
+			// $table->string('service');
+
+			// // When we first use our storage for
+			// // authenticating, we won't have a user
+			// // ID
+			// $table->string('uid')->nullable();
+
+			// $table->string('access_token');
+
+			// // OAuth 1 specific
+			// $table->string('access_token_secret');
+			// $table->string('request_token');
+			// $table->string('request_token_secret');
+
+			// // Common
+			// $table->string('refresh_token');
+			// $table->string('end_of_life');
+			// $table->string('extra_params');
+
+			// $table->timestamps();
+
+			// // We'll add a bunch of unique indexes to
+			// // ensure we don't duplicate any data.
+			// $table->unique(array('user_id', 'service'));
+			// $table->unique(array('service', 'uid'));
 		});
 	}
 

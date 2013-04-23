@@ -23,6 +23,21 @@ use OAuth\Common\Service\ServiceInterface as BaseServiceInterface;
 interface ServiceInterface extends BaseServiceInterface {
 
 	/**
+	 * Gets the service name, or "alias".
+	 *
+	 * @return string
+	 */
+	public function getServiceName();
+
+	/**
+	 * Sets the service name, or "alias".
+	 *
+	 * @param  string  $serviceName
+	 * @return void
+	 */
+	public function setServiceName($serviceName);
+
+	/**
 	 * Returns the user's unique identifier on the service.
 	 *
 	 * @return mixed

@@ -24,6 +24,7 @@ use Illuminate\Routing\Controllers\Controller;
 use Input;
 use URL;
 use Redirect;
+use Sentry;
 use SentrySocial;
 
 class OAuthController extends Controller {
@@ -63,6 +64,8 @@ class OAuthController extends Controller {
 			{
 				// Hmm, not set on this syntax.
 				$user = SentrySocial::authenticate($service, $code);
+				Sentry::login($user);
+				var_dump(Sentry::getUser());
 			}
 
 			// Some providers (e.g. Twitter) won't give an email

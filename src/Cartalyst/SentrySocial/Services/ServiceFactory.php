@@ -86,11 +86,11 @@ class ServiceFactory extends \OAuth\ServiceFactory {
 				}
 			}
 
-			return new $className($credentials, $this->httpClient, $storage, $resolvedScopes);
+			$service = new $className($credentials, $this->httpClient, $storage, $resolvedScopes);
 		}
 
 		// Now, try an OAuth 1 service
-		if ($className = $this->getOAuth1ClassName($serviceName))
+		elseif ($className = $this->getOAuth1ClassName($serviceName))
 		{
 			if( ! empty($scopes))
 			{
@@ -99,8 +99,15 @@ class ServiceFactory extends \OAuth\ServiceFactory {
 
 			$signature = new OAuth1Signature($credentials);
 
-			return new $className($credentials, $this->httpClient, $storage, $signature);
+			$service = new $className($credentials, $this->httpClient, $storage, $signature);
 		}
+		else
+		{
+			return;
+		}
+
+		$service->setServiceName($serviceName);
+		return $service;
 	}
 
 	/**

@@ -18,6 +18,7 @@
  * @link       http://cartalyst.com
  */
 
+use Cartalyst\SentrySocial\Users\Eloquent\Service;
 use Cartalyst\SentrySocial\Services\ServiceInterface;
 use Cartalyst\SentrySocial\Services\ServiceFactory;
 use OAuth\Common\Consumer\Credentials;
@@ -122,22 +123,69 @@ class Manager {
 	 *
 	 * @param  Cartalyst\SentrySocial\Services\ServiceInterface  $service
 	 * @return Cartalyst\Sentry\Users\UserInterface  $user
+	 * @todo   Add a "email_changed_from_social" field to `users` and update
+	 *         email address if different when authenticating??
 	 */
 	public function authenticate(ServiceInterface $service, $code)
 	{
 		$service->requestAccessToken($code);
 
-		$uid = $service->getUniqueIdentifier();
-		$email = $service->getEmail();
+		$serviceName = $service->getServiceName();
+		$uid         = $service->getUniqueIdentifier();
+		$email       = $service->getEmail();
+		$name        = $service->getName();
 
 		if ($email === null)
 		{
 			$email = "$uid@null";
 		}
 
-		var_dump([$uid, $email]);
+		$model = Service::where('service', '=', $serviceName)
+			->where('uid', '=', $uid)
+			->first();
 
-		// var_dump($service->getUserInfo());
+		// If we have no unique-id to service mapping,
+		// we'll check for a user with the login which
+		// matches our email. If they don't exist, we'll
+		// create them.
+		if ($model === null)
+		{
+			try
+			{
+				$user = \Sentry::getUserProvider()->findById($email);
+			}
+			catch (\Cartalyst\Sentry\Users\UserNotFoundException $e)
+			{
+				$user            = \Sentry::getUserProvider()->createModel();
+				$user->email     = $email;
+
+				$passwordParams = array($serviceName, $uid, $email, time(), mt_rand());
+				shuffle($passwordParams);
+
+				$user->password  = implode('', $passwordParams);
+				$user->activated = true;
+
+				if (is_array($name))
+				{
+					$user->first_name = $name[0];
+					$user->last_name  = $name[1];
+				}
+				elseif (is_string($name))
+				{
+					$user->first_name = $name;
+				}
+
+				$user->save();
+			}
+
+			$model = new Service;
+			$model->user_id = $user->getKey();
+			$model->service = $serviceName;
+			$model->uid     = $uid;
+			$model->save();
+		}
+
+		return $model->user;
 	}
 
 	/**

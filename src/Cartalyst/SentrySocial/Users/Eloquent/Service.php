@@ -23,6 +23,20 @@ use Illuminate\Database\Eloquent\Model;
 class Service extends Model {
 
 	/**
+	 * The table associated with the model.
+	 *
+	 * @var string
+	 */
+	protected $table = 'social';
+
+	/**
+	 * The attributes that aren't mass assignable.
+	 *
+	 * @var array
+	 */
+	protected $guarded = array();
+
+	/**
 	 * Returns the relationship to the user that this
 	 * service belongs to.
 	 *
@@ -30,7 +44,7 @@ class Service extends Model {
 	 */
 	public function user()
 	{
-		return $this->belongsTo('Cartalyst\SentrySocial\Users\Eloquent\User', 'user_id');
+		return $this->belongsTo('Cartalyst\Sentry\Users\Eloquent\User', 'user_id');
 	}
 
 }
