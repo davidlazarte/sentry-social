@@ -26,7 +26,7 @@ use OAuth\OAuth1\Service\OAuth1ServiceInterface;
 use OAuth\OAuth1\Signature\Signature as OAuth1Signature;
 use OAuth\OAuth2\Service\OAuth2ServiceInterface;
 
-class ServiceProvider extends \OAuth\ServiceFactory {
+class ServiceFactory extends \OAuth\ServiceFactory {
 
 	/**
 	 * An array of custom OAuth2 services.

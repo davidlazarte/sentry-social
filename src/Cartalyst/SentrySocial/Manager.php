@@ -19,7 +19,7 @@
  */
 
 use Cartalyst\SentrySocial\Services\ServiceInterface;
-use Cartalyst\SentrySocial\Services\ServiceProvider;
+use Cartalyst\SentrySocial\Services\ServiceFactory;
 use OAuth\Common\Consumer\Credentials;
 
 class Manager {
@@ -28,9 +28,9 @@ class Manager {
 	 * The Service Factory, used for creating
 	 * service instances.
 	 *
-	 * @var Cartalyst\SentrySocial\ServiceProvider
+	 * @var Cartalyst\SentrySocial\ServiceFactory
 	 */
-	protected $serviceProvider;
+	protected $serviceFactory;
 
 	/**
 	 * Array of registered connections.
@@ -42,13 +42,13 @@ class Manager {
 	/**
 	 * Create a new Sentry Social manager.
 	 *
-	 * @param  Cartalyst\Sentry\ServiceProvider  $serviceProvider
+	 * @param  Cartalyst\Sentry\ServiceFactory  $serviceFactory
 	 * @param  array  $connections
 	 * @return void
 	 */
-	public function __construct(ServiceProvider $serviceProvider = null, array $connections = array())
+	public function __construct(ServiceFactory $serviceFactory = null, array $connections = array())
 	{
-		$this->serviceProvider = $serviceProvider ?: new ServiceProvider;
+		$this->serviceFactory = $serviceFactory ?: new ServiceFactory;
 
 		foreach ($connections as $name => $connection)
 		{
@@ -81,7 +81,7 @@ class Manager {
 	 */
 	public function registerOAuth2Service($className)
 	{
-		$this->serviceProvider->registerOAuth2Service($className);
+		$this->serviceFactory->registerOAuth2Service($className);
 	}
 
 	/**
@@ -92,7 +92,7 @@ class Manager {
 	 */
 	public function registerOAuth1Service($className)
 	{
-		$this->serviceProvider->registerOAuth1Service($className);
+		$this->serviceFactory->registerOAuth1Service($className);
 	}
 
 	/**
@@ -114,7 +114,7 @@ class Manager {
 
 		$scopes = isset($connection['scopes']) ? $connection['scopes'] : array();
 
-		return $this->serviceProvider->createService($connection['service'], $credentials, $storage, $scopes);
+		return $this->serviceFactory->createService($connection['service'], $credentials, $storage, $scopes);
 	}
 
 	/**

@@ -18,7 +18,7 @@
  * @link       http://cartalyst.com
  */
 
-use Cartalyst\SentrySocial\Services\ServiceProvider;
+use Cartalyst\SentrySocial\Services\ServiceFactory;
 use Cartalyst\SentrySocial\Storage\EloquentStorage;
 use OAuth\Common\Storage\Memory as MemoryStorage;
 use OAuth\Common\Storage\Session as SessionStorage;
@@ -49,7 +49,7 @@ class SentrySocialServiceProvider extends \Illuminate\Support\ServiceProvider {
 	{
 		// The "service provider" in this context is the
 		// class which provides a service object.
-		$this->registerServiceProvider();
+		$this->registerServiceFactory();
 
 		$this->registerStorage();
 
@@ -61,11 +61,11 @@ class SentrySocialServiceProvider extends \Illuminate\Support\ServiceProvider {
 	 *
 	 * @return void
 	 */
-	protected function registerServiceProvider()
+	protected function registerServiceFactory()
 	{
 		$this->app['sentrysocial.provider'] = $this->app->share(function($app)
 		{
-			return new ServiceProvider;
+			return new ServiceFactory;
 		});
 	}
 
