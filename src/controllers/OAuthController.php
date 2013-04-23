@@ -18,15 +18,21 @@
  * @link       http://cartalyst.com
  */
 
+use App;
+use Config;
 use Illuminate\Routing\Controllers\Controller;
+use Input;
+use URL;
+use Redirect;
+use SentrySocial;
 
 class OAuthController extends Controller {
 
 	public function getIndex()
 	{
-		foreach (\Config::get('cartalyst/sentrysocial::services.connections') as $service => $config)
+		foreach (Config::get('cartalyst/sentry-social::services.connections') as $service => $config)
 		{
-			echo "<p><a href=\"".\URL::to("oauth/authorize/{$service}")."\">Connect with [{$service}]</a></p>";
+			echo "<p><a href=\"".URL::to("oauth/authorize/{$service}")."\">Connect with [{$service}]</a></p>";
 		}
 	}
 
@@ -38,9 +44,9 @@ class OAuthController extends Controller {
 	 */
 	public function getAuthorize($service)
 	{
-		$service = \SentrySocial::make($service, \URL::to("oauth/callback/{$service}"));
+		$service = SentrySocial::make($service, URL::to("oauth/callback/{$service}"));
 
-		return \Redirect::to((string) $service->getAuthorizationUri());
+		return Redirect::to((string) $service->getAuthorizationUri());
 	}
 
 	/**
@@ -48,15 +54,15 @@ class OAuthController extends Controller {
 	 */
 	public function getCallback($service)
 	{
-		$service = \SentrySocial::make($service, \URL::to("oauth/callback/{$service}"));
+		$service = SentrySocial::make($service, URL::to("oauth/callback/{$service}"));
 
 		// If we have an access code
-		if ($code = \Request::input('code'))
+		if ($code = Input::get('code'))
 		{
 			try
 			{
 				// Hmm, not set on this syntax.
-				$user = \SentrySocial::authenticate($service, $code);
+				$user = SentrySocial::authenticate($service, $code);
 			}
 
 			// Some providers (e.g. Twitter) won't give an email
@@ -68,7 +74,7 @@ class OAuthController extends Controller {
 		}
 		else
 		{
-			\App::abort(404);
+			App::abort(404);
 		}
 	}
 
