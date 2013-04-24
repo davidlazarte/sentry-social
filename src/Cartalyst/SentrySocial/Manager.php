@@ -207,6 +207,20 @@ class Manager {
 			$link->setUser($user);
 		}
 
+		$throttleProvider = $this->sentry->getThrottleProvider();
+
+		// Now, we'll check throttling to ensure we're
+		// not logging in a user which shouldn't be allowed.
+		if ($throttleProvider->isEnabled())
+		{
+			$throttle = $throttleProvider->findByUserId(
+				$user->getId(),
+				$this->sentry->getIpAddress()
+			);
+
+			$throttle->check();
+		}
+
 		$this->sentry->login($user, $remember);
 
 		return $user;
