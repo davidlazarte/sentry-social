@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container">
-	<h3>Congratulations! <small>You're authenticated</small></h3>
+	<h3>Congratulations! <small>You're authenticated and logged in</small></h3>
 	{{ var_dump($user) }}
 </div>
 @endsection
