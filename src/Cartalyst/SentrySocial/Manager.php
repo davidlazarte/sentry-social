@@ -163,36 +163,41 @@ class Manager {
 		// If we have no user associated with the link, we'll register one now
 		if ( ! $user = $link->getUser())
 		{
-			$provider  = $this->sentry->getUserProvider();
-			$emptyUser = $provider->getEmptyUser();
+			$provider = $this->sentry->getUserProvider();
+			$login    = $service->getUserEmail() ?: "{$uid}@{$serviceName}";
 
-			// Create a dummy password for the user
-			$login          = $service->getUserEmail() ?: "{$uid}@{$serviceName}";
-			$passwordParams = array($serviceName, $uid, $login, time(), mt_rand());
-			shuffle($passwordParams);
-
-			// Setup an array of attributes we'll add onto
-			// so we can create our user.
-			$attributes = array(
-				$emptyUser->getLoginName()    => $login,
-				$emptyUser->getPasswordName() => implode('', $passwordParams),
-			);
-
-			// Some providers give a first / last name, some don't.
-			// If we only have one name, we'll just put it in the
-			// "first_name" attribute.
-			if (is_array($name = $service->getUserName()))
+			// Lazily create a user
+			if ( ! $user = $provider->findByLogin($login))
 			{
-				$attributes['first_name'] = $name[0];
-				$attributes['last_name']  = $name[1];
-			}
-			elseif (is_string($name))
-			{
-				$attributes['first_name'] = $name;
-			}
+				$emptyUser = $provider->getEmptyUser();
 
-			$user = $provider->create($attributes);
-			$user->attemptActivation($user->getActivationCode());
+				// Create a dummy password for the user
+				$passwordParams = array($serviceName, $uid, $login, time(), mt_rand());
+				shuffle($passwordParams);
+
+				// Setup an array of attributes we'll add onto
+				// so we can create our user.
+				$attributes = array(
+					$emptyUser->getLoginName()    => $login,
+					$emptyUser->getPasswordName() => implode('', $passwordParams),
+				);
+
+				// Some providers give a first / last name, some don't.
+				// If we only have one name, we'll just put it in the
+				// "first_name" attribute.
+				if (is_array($name = $service->getUserName()))
+				{
+					$attributes['first_name'] = $name[0];
+					$attributes['last_name']  = $name[1];
+				}
+				elseif (is_string($name))
+				{
+					$attributes['first_name'] = $name;
+				}
+
+				$user = $provider->create($attributes);
+				$user->attemptActivation($user->getActivationCode());
+			}
 
 			$link->setUser($user);
 		}
