@@ -79,7 +79,7 @@ class SentrySocialServiceProvider extends \Illuminate\Support\ServiceProvider {
 	{
 		$this->app['sentrysocial'] = $this->app->share(function($app)
 		{
-			$connections = $this->app['config']['cartalyst/sentry-social::services.connections'];
+			$connections = $app['config']['cartalyst/sentry-social::services.connections'];
 
 			return new Manager(
 				$app['sentry'],

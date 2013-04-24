@@ -19,6 +19,8 @@
  */
 
 use OAuth\Common\Consumer\Credentials;
+use OAuth\Common\Http\Client\ClientInterface as HttpClientInterface;
+use OAuth\Common\Http\Client\StreamClient as HttpStreamClient;
 use OAuth\Common\Exception\Exception as OAuthException;
 use OAuth\Common\Service\ServiceInterface;
 use OAuth\Common\Storage\TokenStorageInterface;
@@ -26,7 +28,14 @@ use OAuth\OAuth1\Service\OAuth1ServiceInterface;
 use OAuth\OAuth1\Signature\Signature as OAuth1Signature;
 use OAuth\OAuth2\Service\OAuth2ServiceInterface;
 
-class ServiceFactory extends \OAuth\ServiceFactory {
+class ServiceFactory {
+
+	/**
+	 * The HTTP client we use to retrieve data.
+	 *
+	 * @var OAuth\Common\Http\Client\ClientInterface
+	 */
+	private $httpClient;
 
 	/**
 	 * An array of custom OAuth2 services.
@@ -42,17 +51,16 @@ class ServiceFactory extends \OAuth\ServiceFactory {
 	 */
 	protected $oauth1Services = array();
 
-	/** @var \OAuth\Common\Http\Client\ClientInterface */
-    private $httpClient;
-
-    public function __construct($httpClientType = 'stream')
-    {
-        if( !isset(static::$httpClientMap[$httpClientType] ) ) {
-            throw new Common\Exception\Exception('Invalid http client type passed to OAuth\\ServiceFactory::__construct');
-        }
-
-        $this->httpClient = new static::$httpClientMap[$httpClientType];
-    }
+	/**
+	 * Create a new service factory instance.
+	 *
+	 * @param  OAuth\Common\Http\Client\ClientInterface  $httpClient
+	 * @return void
+	 */
+	public function __construct(HttpClientInterface $httpClient = null)
+	{
+		$this->httpClient = $httpClient ?: new HttpStreamClient;
+	}
 
 	/**
 	 * @param $serviceName string name of service to create
