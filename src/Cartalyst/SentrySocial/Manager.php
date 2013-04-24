@@ -19,6 +19,7 @@
  */
 
 use Cartalyst\Sentry\Sentry;
+use Cartalyst\Sentry\Users\UserNotFoundException;
 use Cartalyst\SentrySocial\SocialLinks\Eloquent\Provider as SocialLinkProvider;
 use Cartalyst\SentrySocial\SocialLinks\ProviderInterface as SocialLinkProviderInterface;
 use Cartalyst\SentrySocial\Services\ServiceInterface;
@@ -167,7 +168,11 @@ class Manager {
 			$login    = $service->getUserEmail() ?: "{$uid}@{$serviceName}";
 
 			// Lazily create a user
-			if ( ! $user = $provider->findByLogin($login))
+			try
+			{
+				$user = $provider->findByLogin($login);
+			}
+			catch (UserNotFoundException $e)
 			{
 				$emptyUser = $provider->getEmptyUser();
 
