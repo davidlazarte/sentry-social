@@ -4,6 +4,9 @@ Sentry Social makes authenticating your users through social networks & third-pa
 
 In version 2, we've added a focus on ease-of-use as well as the ability to authenticate with more and more services.
 
+> **Note:** To download you need to have valid a Cartalyst.com subscription.
+Click [here](https://www.cartalyst.com/pricing) to obtain your subscription.
+
 -----------
 
 ### Features
