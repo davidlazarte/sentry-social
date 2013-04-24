@@ -1,3 +1,6 @@
 {
-    "sections" : []
+    "sections" : [
+    	"introduction",
+    	"installation"
+    ]
 }
