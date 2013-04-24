@@ -1,4 +1,4 @@
-<?php
+<?php namespace Cartalyst\SentrySocial\SocialLinks;
 /**
  * Part of the Sentry Social package.
  *
@@ -18,20 +18,23 @@
  * @link       http://cartalyst.com
  */
 
-return array(
+use Cartalyst\Sentry\Users\UserInterface;
 
-	/*
-	|--------------------------------------------------------------------------
-	| Social Link Model
-	|--------------------------------------------------------------------------
-	|
-	| When users are registered, a "social link provider" will map the social
-	| authentications with user instances. Feel free to use your own model
-	| with our provider.
-	|
-	|
-	*/
+interface LinkInterface {
 
-	'link' => 'Cartalyst\SentrySocial\SocialLinks\Eloquent\SocialLink',
+	/**
+	 * Get the user associated with the social link.
+	 *
+	 * @return Cartalyst\Sentry\Users\UserInterface  $user
+	 */
+	public function getUser();
 
-);
+	/**
+	 * Set the user associated with the social link.
+	 *
+	 * @param  Cartalyst\Sentry\Users\UserInterface  $user
+	 * @return void
+	 */
+	public function setUser(UserInterface $user);
+
+}

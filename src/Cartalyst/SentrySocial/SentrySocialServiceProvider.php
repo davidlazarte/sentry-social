@@ -18,8 +18,8 @@
  * @link       http://cartalyst.com
  */
 
+use Cartalyst\SentrySocial\SocialLinks\Eloquent\Provider as SocialLinkProvider;
 use Cartalyst\SentrySocial\Services\ServiceFactory;
-use Cartalyst\SentrySocial\Storage\EloquentStorage;
 use OAuth\Common\Storage\Memory as MemoryStorage;
 use OAuth\Common\Storage\Session as SessionStorage;
 
@@ -33,11 +33,6 @@ class SentrySocialServiceProvider extends \Illuminate\Support\ServiceProvider {
 	public function boot()
 	{
 		$this->package('cartalyst/sentry-social', 'cartalyst/sentry-social');
-
-		foreach ($this->app['config']['cartalyst/sentry-social::services.connections'] as $name => $connection)
-		{
-			$this->app['sentrysocial']->register($name, $connection);
-		}
 	}
 
 	/**
@@ -47,11 +42,9 @@ class SentrySocialServiceProvider extends \Illuminate\Support\ServiceProvider {
 	 */
 	public function register()
 	{
-		// The "service provider" in this context is the
-		// class which provides a service object.
 		$this->registerServiceFactory();
 
-		$this->registerStorage();
+		$this->registerSocialLinkProvider();
 
 		$this->registerSentrySocial();
 	}
@@ -63,38 +56,20 @@ class SentrySocialServiceProvider extends \Illuminate\Support\ServiceProvider {
 	 */
 	protected function registerServiceFactory()
 	{
-		$this->app['sentry.social.provider'] = $this->app->share(function($app)
+		$this->app['sentry.social.factory'] = $this->app->share(function($app)
 		{
 			return new ServiceFactory;
 		});
 	}
 
-	protected function registerStorage()
+	protected function registerSocialLinkProvider()
 	{
-		// We are not sharing a singleton, we will return
-		// a new instance each time.
-		$this->app['sentry.social.storage'] = function($app)
+		$this->app['sentry.social.link'] = $this->app->share(function($app)
 		{
-			$storage = $app['config']['cartalyst/sentry-social::storage'];
+			$model = $app['config']['cartalyst/sentry-social::link'];
 
-			switch ($storage)
-			{
-				case 'eloquent':
-					$model = $app['config']['cartalyst/sentry-social::model'];
-					return new EloquentStorage($model);
-
-				// @todo Add an illuminate/session storage engine.
-				case 'session':
-					return new SessionStorage(true, 'cartalyst_sentry_social_token');
-					break;
-
-				case 'memory':
-					return new MemoryStorage;
-					break;
-			}
-
-			throw new \InvalidArgumentException("Invalid storage driver [$storage] chosen.");
-		};
+			return new SocialLinkProvider($model);
+		});
 	}
 
 	/**
@@ -106,7 +81,14 @@ class SentrySocialServiceProvider extends \Illuminate\Support\ServiceProvider {
 	{
 		$this->app['sentrysocial'] = $this->app->share(function($app)
 		{
-			return new Manager($app['sentry.social.provider']);
+			$connections = $this->app['config']['cartalyst/sentry-social::services.connections'];
+
+			return new Manager(
+				$app['sentry'],
+				$app['sentry.social.link'],
+				$app['sentry.social.factory'],
+				$connections
+			);
 		});
 	}
 

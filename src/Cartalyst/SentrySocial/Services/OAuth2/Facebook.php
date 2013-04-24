@@ -63,7 +63,7 @@ class Facebook extends BaseService implements ServiceInterface {
 	 *
 	 * @return mixed
 	 */
-	public function getUniqueIdentifier()
+	public function getUserUniqueIdentifier()
 	{
 		$info = $this->getUserInfo();
 		return (int) $info['id'];
@@ -75,7 +75,7 @@ class Facebook extends BaseService implements ServiceInterface {
 	 *
 	 * @return string|null
 	 */
-	public function getEmail()
+	public function getUserEmail()
 	{
 		$info = $this->getUserInfo();
 
@@ -97,7 +97,7 @@ class Facebook extends BaseService implements ServiceInterface {
 	 *
 	 * @return array|string|null
 	 */
-	public function getName()
+	public function getUserName()
 	{
 		$info = $this->getUserInfo();
 		return array($info['first_name'], $info['last_name']);

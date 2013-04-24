@@ -42,7 +42,7 @@ interface ServiceInterface extends BaseServiceInterface {
 	 *
 	 * @return mixed
 	 */
-	public function getUniqueIdentifier();
+	public function getUserUniqueIdentifier();
 
 	/**
 	 * Returns the user's email address. Note, some services
@@ -50,7 +50,7 @@ interface ServiceInterface extends BaseServiceInterface {
 	 *
 	 * @return string|null
 	 */
-	public function getEmail();
+	public function getUserEmail();
 
 	/**
 	 * Returns the user's name. If first / last name can be
@@ -59,7 +59,7 @@ interface ServiceInterface extends BaseServiceInterface {
 	 *
 	 * @return array|string|null
 	 */
-	public function getName();
+	public function getUserName();
 
 	/**
 	 * Retuns an array of basic user information.

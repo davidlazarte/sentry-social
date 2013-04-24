@@ -63,7 +63,7 @@ class Microsoft extends BaseService implements ServiceInterface {
 	 *
 	 * @return mixed
 	 */
-	public function getUniqueIdentifier()
+	public function getUserUniqueIdentifier()
 	{
 		$info = $this->getUserInfo();
 		return $info['id'];
@@ -76,7 +76,7 @@ class Microsoft extends BaseService implements ServiceInterface {
 	 * @return string|null
 	 * @link   http://social.msdn.microsoft.com/Forums/en-US/messengerconnect/thread/c6dcb9ab-aed4-400a-99fb-5650c393a95d
 	 */
-	public function getEmail()
+	public function getUserEmail()
 	{
 		$info = $this->getUserInfo();
 
@@ -99,7 +99,7 @@ class Microsoft extends BaseService implements ServiceInterface {
 	 *
 	 * @return array|string|null
 	 */
-	public function getName()
+	public function getUserName()
 	{
 		$info = $this->getUserInfo();
 		return array($info['first_name'], $info['last_name']);

@@ -63,7 +63,7 @@ class FitBit extends BaseService implements ServiceInterface {
 	 *
 	 * @return mixed
 	 */
-	public function getUniqueIdentifier()
+	public function getUserUniqueIdentifier()
 	{
 		$info = $this->getUserInfo();
 		return $info['user']['encodedId'];
@@ -75,7 +75,7 @@ class FitBit extends BaseService implements ServiceInterface {
 	 *
 	 * @return string|null
 	 */
-	public function getEmail()
+	public function getUserEmail()
 	{
 		return null;
 	}
@@ -87,7 +87,7 @@ class FitBit extends BaseService implements ServiceInterface {
 	 *
 	 * @return array|string|null
 	 */
-	public function getName()
+	public function getUserName()
 	{
 		$info = $this->getUserInfo();
 		$name = $info['user']['fullName'];

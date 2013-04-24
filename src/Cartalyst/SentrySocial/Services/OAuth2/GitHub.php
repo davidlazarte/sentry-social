@@ -63,7 +63,7 @@ class GitHub extends BaseService implements ServiceInterface {
 	 *
 	 * @return mixed
 	 */
-	public function getUniqueIdentifier()
+	public function getUserUniqueIdentifier()
 	{
 		$info = $this->getUserInfo();
 		return (int) $info['id'];
@@ -75,7 +75,7 @@ class GitHub extends BaseService implements ServiceInterface {
 	 *
 	 * @return string|null
 	 */
-	public function getEmail()
+	public function getUserEmail()
 	{
 		$info = $this->getUserInfo();
 		return $info['email'];
@@ -88,7 +88,7 @@ class GitHub extends BaseService implements ServiceInterface {
 	 *
 	 * @return array|string|null
 	 */
-	public function getName()
+	public function getUserName()
 	{
 		$info = $this->getUserInfo();
 		$name = $info['name'];

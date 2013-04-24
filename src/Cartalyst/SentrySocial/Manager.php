@@ -18,12 +18,30 @@
  * @link       http://cartalyst.com
  */
 
-use Cartalyst\SentrySocial\Users\Eloquent\Service;
+use Cartalyst\Sentry\Sentry;
+use Cartalyst\SentrySocial\SocialLinks\Eloquent\Provider as SocialLinkProvider;
+use Cartalyst\SentrySocial\SocialLinks\ProviderInterface as SocialLinkProviderInterface;
 use Cartalyst\SentrySocial\Services\ServiceInterface;
 use Cartalyst\SentrySocial\Services\ServiceFactory;
+use Illuminate\Database\Eloquent\Model;
 use OAuth\Common\Consumer\Credentials;
 
 class Manager {
+
+	/**
+	 * The Sentry instance.
+	 *
+	 * @var Cartalyst\Sentry\Sentry
+	 */
+	protected $sentry;
+
+	/**
+	 * The social link provider, used for tying logins
+	 * to Sentry logins.
+	 *
+	 * @var Cartalyst\SentrySocial\SocialLinks\ProviderInterface
+	 */
+	protected $socialLinkProvider;
 
 	/**
 	 * The Service Factory, used for creating
@@ -43,13 +61,16 @@ class Manager {
 	/**
 	 * Create a new Sentry Social manager.
 	 *
+	 * @param  Cartalyst\SentrySocial\SocialLinks\ProviderInterface  $socialLinkProvider
 	 * @param  Cartalyst\Sentry\ServiceFactory  $serviceFactory
 	 * @param  array  $connections
 	 * @return void
 	 */
-	public function __construct(ServiceFactory $serviceFactory = null, array $connections = array())
+	public function __construct(Sentry $sentry, SocialLinkProviderInterface $socialLinkProvider = null, ServiceFactory $serviceFactory = null, array $connections = array())
 	{
-		$this->serviceFactory = $serviceFactory ?: new ServiceFactory;
+		$this->sentry             = $sentry;
+		$this->socialLinkProvider = $socialLinkProvider ?: new SocialLinkProvider;
+		$this->serviceFactory     = $serviceFactory ?: new ServiceFactory;
 
 		foreach ($connections as $name => $connection)
 		{
@@ -122,70 +143,63 @@ class Manager {
 	 * Authenticates the given Sentry Social OAuth service.
 	 *
 	 * @param  Cartalyst\SentrySocial\Services\ServiceInterface  $service
+	 * @param  string  $code
+	 * @param  bool    $remember
 	 * @return Cartalyst\Sentry\Users\UserInterface  $user
 	 * @todo   Add a "email_changed_from_social" field to `users` and update
 	 *         email address if different when authenticating??
 	 */
-	public function authenticate(ServiceInterface $service, $code)
+	public function authenticate(ServiceInterface $service, $code, $remember = false)
 	{
+		$this->sentry->logout();
+
 		$service->requestAccessToken($code);
 
 		$serviceName = $service->getServiceName();
-		$uid         = $service->getUniqueIdentifier();
-		$email       = $service->getEmail();
-		$name        = $service->getName();
+		$uid         = $service->getUserUniqueIdentifier();
 
-		if ($email === null)
+		$link = $this->socialLinkProvider->findLink($serviceName, $uid);
+
+		// If we have no user associated with the link, we'll register one now
+		if ( ! $user = $link->getUser())
 		{
-			$email = "$uid@null";
-		}
+			$provider  = $this->sentry->getUserProvider();
+			$emptyUser = $provider->getEmptyUser();
 
-		$model = Service::where('service', '=', $serviceName)
-			->where('uid', '=', $uid)
-			->first();
+			// Create a dummy password for the user
+			$login          = $service->getUserEmail() ?: "{$uid}@{$serviceName}";
+			$passwordParams = array($serviceName, $uid, $login, time(), mt_rand());
+			shuffle($passwordParams);
 
-		// If we have no unique-id to service mapping,
-		// we'll check for a user with the login which
-		// matches our email. If they don't exist, we'll
-		// create them.
-		if ($model === null)
-		{
-			try
+			// Setup an array of attributes we'll add onto
+			// so we can create our user.
+			$attributes = array(
+				$emptyUser->getLoginName()    => $login,
+				$emptyUser->getPasswordName() => implode('', $passwordParams),
+			);
+
+			// Some providers give a first / last name, some don't.
+			// If we only have one name, we'll just put it in the
+			// "first_name" attribute.
+			if (is_array($name = $service->getUserName()))
 			{
-				$user = \Sentry::getUserProvider()->findById($email);
+				$attributes['first_name'] = $name[0];
+				$attributes['last_name']  = $name[1];
 			}
-			catch (\Cartalyst\Sentry\Users\UserNotFoundException $e)
+			elseif (is_string($name))
 			{
-				$user            = \Sentry::getUserProvider()->createModel();
-				$user->email     = $email;
-
-				$passwordParams = array($serviceName, $uid, $email, time(), mt_rand());
-				shuffle($passwordParams);
-
-				$user->password  = implode('', $passwordParams);
-				$user->activated = true;
-
-				if (is_array($name))
-				{
-					$user->first_name = $name[0];
-					$user->last_name  = $name[1];
-				}
-				elseif (is_string($name))
-				{
-					$user->first_name = $name;
-				}
-
-				$user->save();
+				$attributes['first_name'] = $name;
 			}
 
-			$model = new Service;
-			$model->user_id = $user->getKey();
-			$model->service = $serviceName;
-			$model->uid     = $uid;
-			$model->save();
+			$user = $provider->create($attributes);
+			$user->attemptActivation($user->getActivationCode());
+
+			$link->setUser($user);
 		}
 
-		return $model->user;
+		$this->sentry->login($user, $remember);
+
+		return $user;
 	}
 
 	/**

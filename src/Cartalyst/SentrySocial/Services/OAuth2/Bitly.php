@@ -64,7 +64,7 @@ class Bitly extends BaseService implements ServiceInterface {
 	 * @return mixed
 	 * @link   http://support.bitly.com/knowledgebase/articles/164959-how-do-i-change-my-username-
 	 */
-	public function getUniqueIdentifier()
+	public function getUserUniqueIdentifier()
 	{
 		$info = $this->getUserInfo();
 		return $info['login'];
@@ -76,7 +76,7 @@ class Bitly extends BaseService implements ServiceInterface {
 	 *
 	 * @return string|null
 	 */
-	public function getEmail()
+	public function getUserEmail()
 	{
 		return null;
 	}
@@ -88,7 +88,7 @@ class Bitly extends BaseService implements ServiceInterface {
 	 *
 	 * @return array|string|null
 	 */
-	public function getName()
+	public function getUserName()
 	{
 		$info = $this->getUserInfo();
 		return $info['full_name'];

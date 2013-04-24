@@ -1,6 +1,6 @@
-<?php namespace Cartalyst\SentrySocial\Users\Eloquent;
+<?php namespace Cartalyst\SentrySocial\SocialLinks\Eloquent;
 /**
- * Part of the Sentry package.
+ * Part of the Sentry Social package.
  *
  * NOTICE OF LICENSE
  *
@@ -18,9 +18,11 @@
  * @link       http://cartalyst.com
  */
 
+use Cartalyst\Sentry\Users\UserInterface;
+use Cartalyst\SentrySocial\SocialLinks\LinkInterface;
 use Illuminate\Database\Eloquent\Model;
 
-class Service extends Model {
+class SocialLink extends Model implements LinkInterface {
 
 	/**
 	 * The table associated with the model.
@@ -45,6 +47,28 @@ class Service extends Model {
 	public function user()
 	{
 		return $this->belongsTo('Cartalyst\Sentry\Users\Eloquent\User', 'user_id');
+	}
+
+	/**
+	 * Get the user associated with the social link.
+	 *
+	 * @return Cartalyst\Sentry\Users\UserInterface  $user
+	 */
+	public function getUser()
+	{
+		return $this->user()->getResults();
+	}
+
+	/**
+	 * Set the user associated with the social link.
+	 *
+	 * @param  Cartalyst\Sentry\Users\UserInterface  $user
+	 * @return void
+	 */
+	public function setUser(UserInterface $user)
+	{
+		$this->user_id = $user->getId();
+		$this->save();
 	}
 
 }

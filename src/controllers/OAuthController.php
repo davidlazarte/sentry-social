@@ -29,6 +29,11 @@ use SentrySocial;
 
 class OAuthController extends Controller {
 
+	/**
+	 * Lists all available services to authenticate with.
+	 *
+	 * @return Illuminate\View\View
+	 */
 	public function getIndex()
 	{
 		foreach (Config::get('cartalyst/sentry-social::services.connections') as $service => $config)
@@ -40,45 +45,58 @@ class OAuthController extends Controller {
 	/**
 	 * Shows a link to authenticate a service.
 	 *
-	 * @param  string  $service
+	 * @param  string  $serviceName
 	 * @return string
 	 */
-	public function getAuthorize($service)
+	public function getAuthorize($serviceName)
 	{
-		$service = SentrySocial::make($service, URL::to("oauth/callback/{$service}"));
+		$service = SentrySocial::make($serviceName, URL::to("oauth/callback/{$serviceName}"));
 
 		return Redirect::to((string) $service->getAuthorizationUri());
 	}
 
 	/**
 	 * Handles authentication
+	 *
+	 * @param  string  $serviceName
+	 * @return mixed
 	 */
-	public function getCallback($service)
+	public function getCallback($serviceName)
 	{
-		$service = SentrySocial::make($service, URL::to("oauth/callback/{$service}"));
+		$service = SentrySocial::make($serviceName, URL::to("oauth/callback/{$serviceName}"));
 
 		// If we have an access code
 		if ($code = Input::get('code'))
 		{
-			try
+			if (SentrySocial::authenticate($service, $code))
 			{
-				// Hmm, not set on this syntax.
-				$user = SentrySocial::authenticate($service, $code);
-				Sentry::login($user);
-				var_dump(Sentry::getUser());
-			}
-
-			// Some providers (e.g. Twitter) won't give an email
-			// address.
-			catch (LoginRequiredException $e)
-			{
-
+				return Redirect::to('oauth/authenticated');
 			}
 		}
-		else
+
+		App::abort(404);
+	}
+
+	/**
+	 * Returns the "authenticated" view which simply shows the
+	 * authenticated user.
+	 *
+	 * @return mixed
+	 */
+	public function getAuthenticated()
+	{
+		if ( ! Sentry::check())
 		{
-			App::abort(404);
+			App::abort(403, 'Not Authenticated');
 		}
+
+		$response = <<<RESPONSE
+<h1>Authenticated!</h1>
+<p>You have successfully authenticated. Your user details are below:</p>
+<pre>%s</pre>
+RESPONSE;
+
+		return sprintf($response, print_r(Sentry::getUser(), true));
 	}
 
 }
