@@ -20,12 +20,14 @@
 
 use App;
 use Config;
+use Exception;
 use Illuminate\Routing\Controllers\Controller;
 use Input;
 use URL;
 use Redirect;
 use Sentry;
 use SentrySocial;
+use View;
 
 class OAuthController extends Controller {
 
@@ -36,10 +38,19 @@ class OAuthController extends Controller {
 	 */
 	public function getIndex()
 	{
-		foreach (Config::get('cartalyst/sentry-social::services.connections') as $service => $config)
+		$connections = array();
+
+		foreach (Config::get('cartalyst/sentry-social::services.connections') as $serviceName => $connection)
 		{
-			echo "<p><a href=\"".URL::to("oauth/authorize/{$service}")."\">Connect with [{$service}]</a></p>";
+			if ( ! $connection['key'] or ! $connection['secret']) continue;
+
+			if ( ! isset($connection['service'])) $connection['service'] = $serviceName;
+			if ( ! isset($connection['name'])) $connection['name'] = $connection['service'];
+
+			$connections[] = $connection;
 		}
+
+		return View::make('cartalyst/sentry-social::oauth/index', compact('connections'));
 	}
 
 	/**
@@ -68,9 +79,16 @@ class OAuthController extends Controller {
 		// If we have an access code
 		if ($code = Input::get('code'))
 		{
-			if (SentrySocial::authenticate($service, $code))
+			try
 			{
-				return Redirect::to('oauth/authenticated');
+				if (SentrySocial::authenticate($service, $code))
+				{
+					return Redirect::to('oauth/authenticated');
+				}
+			}
+			catch (Exception $e)
+			{
+				return Redirect::to('oauth')->withErrors($e->getMessage());
 			}
 		}
 
@@ -87,16 +105,12 @@ class OAuthController extends Controller {
 	{
 		if ( ! Sentry::check())
 		{
-			App::abort(403, 'Not Authenticated');
+			return Redirect::to('oauth')->withErrors('Not authenticated yet.');
 		}
 
-		$response = <<<RESPONSE
-<h1>Authenticated!</h1>
-<p>You have successfully authenticated. Your user details are below:</p>
-<pre>%s</pre>
-RESPONSE;
+		$user = Sentry::getUser();
 
-		return sprintf($response, print_r(Sentry::getUser(), true));
+		return View::make('cartalyst/sentry-social::oauth/authenticated', compact('user'));
 	}
 
 }

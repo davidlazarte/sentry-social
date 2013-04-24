@@ -37,8 +37,9 @@ return array(
 	|    the configuration to guess the type. This allows for convenience
 	|    as well as multiple configurations with the same "service".
 	|    We plan on adding support for more providers in the future.
-	| 2. "key" - your application's key.
-	| 3. "secret" - your application's secret.
+	| 2. "name" - a human-friendly name (optional).
+	| 3. "key" - your application's key.
+	| 4. "secret" - your application's secret.
 	|
 	| OAuth2 providers can also provide the following:
 	| 1. "scopes" - an array of scopes you are requesting access to (optional).
@@ -50,58 +51,68 @@ return array(
 	'connections' => array(
 
 		'bitly' => array(
+			'name'   => 'bitly',
 			'key'    => '',
 			'secret' => '',
 			'scopes' => array(),
 		),
 
 		'facebook' => array(
+			'name'   => 'Facebook',
 			'key'    => '',
 			'secret' => '',
 			'scopes' => array('email'),
 		),
 
 		'fitbit' => array(
+			'name'   => 'Fitbit',
 			'key'    => '',
 			'secret' => '',
 		),
 
 		'foursquare' => array(
+			'name'   => 'Foursquare',
 			'key'    => '',
 			'secret' => '',
 			'scopes' => array(),
 		),
 
 		'github' => array(
+			'name'   => 'GitHub',
 			'key'    => '',
 			'secret' => '',
 			'scopes' => array('user'),
 		),
 
 		'google' => array(
+			'name'   => 'Google',
 			'key'    => '',
 			'secret' => '',
 			'scopes' => array('userinfo_profile', 'userinfo_email'),
 		),
 
 		'microsoft' => array(
+			'name'   => 'Microsoft',
 			'key'    => '',
 			'secret' => '',
 			'scopes' => array('emails'),
 		),
 
 		'soundcloud' => array(
+			'name'   => 'SoundCloud',
 			'key'    => '',
 			'secret' => '',
 			'scopes' => array(),
 		),
 
 		'twitter' => array(
+			'name'   => 'Twitter',
 			'key'    => '',
 			'secret' => '',
 		),
 
 		'yammer' => array(
+			'name'   => 'Yammer',
 			'key'    => '',
 			'secret' => '',
 			'scopes' => array(),

@@ -20,8 +20,6 @@
 
 use Cartalyst\SentrySocial\SocialLinks\Eloquent\Provider as SocialLinkProvider;
 use Cartalyst\SentrySocial\Services\ServiceFactory;
-use OAuth\Common\Storage\Memory as MemoryStorage;
-use OAuth\Common\Storage\Session as SessionStorage;
 
 class SentrySocialServiceProvider extends \Illuminate\Support\ServiceProvider {
 
