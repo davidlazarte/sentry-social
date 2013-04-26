@@ -123,10 +123,11 @@ return array(
 		// Example of using a different key to the "service"
 		// "service" used. This allows for multiple
 		// configurations for the one service. You would
-		// call SentrySocial::make('main'); to make this
+		// call SentrySocial::make('secondary'); to make this
 		// service.
-		'main' => array(
+		'secondary' => array(
 			'service' => 'google',
+			'name'    => 'Google 2',
 			'key'     => '',
 			'secret'  => '',
 			'scopes'  => array('userinfo_email', 'userinfo_profile'),
