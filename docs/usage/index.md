@@ -19,23 +19,23 @@ Once you have made a service, you need to redirect the user to the "authorizatio
 
 	// Let's redirect the user to authorize with Facebook
 	return Redirect::to((string) $service->getAuthorizationUri());
-	
+
 #### Authenticating the User
 
-Once you have authenticated a user, they'll get redirected to the URL which you specified when you made the service, in this case `http://url-which-you-would-like-to/redirect-do`. We then want to use the `code` which has been passed back as `$_GET` parameter and authenticate the user. This is the magic which ties the service login with a Sentry login. It will create non-existent users and link existing ones. A user may be linked to multiple services as well:
+Once the user has authorized your application, they'll get redirected to the URL which you specified when you made the service, in this case `http://url-which-you-would-like-to/redirect-do`. We then want to use the `code` which has been passed back as `$_GET` parameter and authenticate the user. This is the magic which ties the service login with a Sentry login. It will create non-existent users and link existing ones. A user may be linked to multiple services as well:
 
 	$service = SentrySocial::make('facebook', 'http://url-which-you-would-like-to/redirect-do');
-	
+
 	if ($code = Input::get('code'))
 	{
 		if ($user = SentrySocial::authenticate($service, $code))
 		{
 			var_dump($user);
-			
+
 			// Additionally, the user will be logged in, so this
 			// is the same:
 			// var_dump(Sentry::getUser());
-			
+
 			// Continue with your application's workflow, the user is logged in!
 		}
 	}
@@ -46,6 +46,6 @@ In Laravel 4, we've added a controller which handles the registration flow for y
 
 	// To use it, in app/routes.php
 	Route::controller('oauth', 'Cartalyst\SentrySocial\Controllers\OAuthController');
-	
+
 	// To extend it, make a class which extends Cartalyst\SentrySocial\Controllers\OAuthController
 	Route::controller('oauth', 'MyOAuthController');

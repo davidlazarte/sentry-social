@@ -10,8 +10,8 @@
 					<div class="thumbnail">
 						<img src="http://placehold.it/400x180">
 						<div class="caption">
-							<a href="{{ URL::to('oauth/authorize/'.$connection['service']) }}" class="btn">
-								Login with {{ $connection['name'] }}
+							<a href="{{ URL::to('oauth/authorize/'.$connection->getService()) }}" class="btn">
+								Login with {{ $connection->getName() }}
 							</a>
 						</div>
 					</div>

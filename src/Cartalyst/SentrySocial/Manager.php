@@ -82,18 +82,15 @@ class Manager {
 	/**
 	 * Registers a connection with the manager.
 	 *
-	 * @param  string  $name
-	 * @param  array   $connection
-	 * @return void
+	 * @param  string  $slug
+	 * @param  array   $attributes
+	 * @return Cartalyst\SentrySocial\Connection  $connection
 	 */
-	public function register($name, array $connection)
+	public function register($slug, array $attributes)
 	{
-		// Default the connection service to be the
-		// same as the connection name if it is
-		// not provided.
-		if ( ! isset($connection['service'])) $connection['service'] = $name;
+		$connection = $this->createConnection($slug, $attributes);
 
-		$this->connections[$name] = $connection;
+		return $this->connections[$slug] = $connection;
 	}
 
 	/**
@@ -119,25 +116,19 @@ class Manager {
 	}
 
 	/**
-	 * Makes a new service from a connection with
-	 * the given name.
+	 * Makes a new service from a connection with the given slug.
 	 *
-	 * @param  string  $name
+	 * @param  string  $slug
 	 * @param  string  $callback
 	 * @return Cartalyst\SentrySocial\Services\ServiceInterface
-	 * @todo   Add proper storage options (illuminate/database for example).
 	 */
-	public function make($name, $callback = null)
+	public function make($slug, $callback = null)
 	{
-		$connection  = $this->getConnection($name, $callback);
+		$connection  = $this->getConnection($slug, $callback);
+		$credentials = $this->createCredentials($connection->getKey(), $connection->getSecret(), $callback);
+		$storage     = $this->createStorage($service = $connection->getService());
 
-		$credentials = $this->createCredentials($connection['key'], $connection['secret'], $callback);
-
-		$storage = $this->createStorage($connection['service']);
-
-		$scopes = isset($connection['scopes']) ? $connection['scopes'] : array();
-
-		return $this->serviceFactory->createService($connection['service'], $credentials, $storage, $scopes);
+		return $this->serviceFactory->createService($service, $credentials, $storage, $connection->getScopes());
 	}
 
 	/**
@@ -227,58 +218,77 @@ class Manager {
 	}
 
 	/**
-	 * Gets a connection registered with the manager
-	 * with the given name. Callbacks can be overridden
-	 * at runtime.
+	 * Get the registered connections.
+	 *
+	 * @return array
+	 */
+	public function getConnections()
+	{
+		return $this->connections;
+	}
+
+	/**
+	 * Gets a connection registered with the manager with the given slug.
+	 * The callback URI can also can be overridden at runtime.
 	 *
 	 * @param  string|array  $name
 	 * @param  string  $callback
 	 * @return array
 	 */
-	protected function getConnection($name, $callback = null)
+	protected function getConnection($slug, $callback = null)
 	{
 		// If our connection is already an array,
 		// the developer is creating a connection
 		// on the fly, without registering it.
-		if (is_array($name))
+		if (is_array($slug))
 		{
-			$connection = $name;
+			$connection = $this->createConnection($slug);
 		}
 
 		// Otherwise, we will retrieve it from the array
 		// of registered connections.
 		else
 		{
-			if ( ! isset($this->connections[$name]))
+			if ( ! isset($this->connections[$slug]))
 			{
-				throw new \RuntimeException("Cannot make connection [$name] as it has not been registered.");
+				throw new \RuntimeException("Cannot make connection [$slug] as it has not been registered.");
 			}
 
-			$connection = $this->connections[$name];
+			$connection = $this->connections[$slug];
 		}
 
-		// Validate the connection
-		if ( ! isset($connection['key']) or ! isset($connection['secret']) or ! isset($connection['service']))
-		{
-			throw new \RuntimeException("Invalid connection configuration passed.");
-		}
-
-		// If a runtime callback has been passed, override
-		// the connection with it.
+		// If a runtime callback has been passed, override the connection with it.
 		if (isset($callback))
 		{
-			$connection['callback'] = $callback;
+			$connection->setCallback($callback);
 		}
 
-		if ( ! isset($callback))
-		{
-			$message = 'No callback for connection.';
-			if (is_string($name))
-			{
-				$message = "No callback for [$name] connection.";
-			}
+		return $connection;
+	}
 
-			throw new \RuntimeException($message);
+	/**
+	 * Creates a connection from the given slug and attributes.
+	 *
+	 * @param  string  $slug
+	 * @param  array   $attributes
+	 * @return Cartalyst\SentrySocial\Connection  $connection
+	 */
+	protected function createConnection($slug, array $attributes)
+	{
+		$connection = new Connection;
+		$connection->setService(isset($attributes['service']) ? $attributes['service'] : $slug);
+		$connection->setName(isset($attributes['name']) ? $attributes['name'] : $connection->getService());
+		$connection->setKey($attributes['key']);
+		$connection->setSecret($attributes['secret']);
+
+		if (isset($attributes['scopes']))
+		{
+			$connection->setScopes($attributes['scopes']);
+		}
+
+		if (isset($attributes['callback']))
+		{
+			$connection->setCallback($callback);
 		}
 
 		return $connection;
@@ -298,9 +308,14 @@ class Manager {
 		return new Credentials($key, $secret, $callback);
 	}
 
-	protected function createStorage($service)
+	/**
+	 * Creates a storage driver for the given service name.
+	 *
+	 *
+	 */
+	protected function createStorage($serviceName)
 	{
-		return new \OAuth\Common\Storage\Session(true, 'oauth_token_'.$service);
+		return new \OAuth\Common\Storage\Session(true, 'oauth_token_'.$serviceName);
 	}
 
 }

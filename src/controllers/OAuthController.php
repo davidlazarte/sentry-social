@@ -38,17 +38,10 @@ class OAuthController extends Controller {
 	 */
 	public function getIndex()
 	{
-		$connections = array();
-
-		foreach (Config::get('cartalyst/sentry-social::services.connections') as $serviceName => $connection)
+		$connections = array_filter(SentrySocial::getConnections(), function($connection)
 		{
-			if ( ! $connection['key'] or ! $connection['secret']) continue;
-
-			if ( ! isset($connection['service'])) $connection['service'] = $serviceName;
-			if ( ! isset($connection['name'])) $connection['name'] = $connection['service'];
-
-			$connections[] = $connection;
-		}
+			return ($connection->getKey() and $connection->getSecret());
+		});
 
 		return View::make('cartalyst/sentry-social::oauth/index', compact('connections'));
 	}
@@ -74,7 +67,7 @@ class OAuthController extends Controller {
 	 */
 	public function getCallback($serviceName)
 	{
-		$service = SentrySocial::make($serviceName, URL::to("oauth/callback/{$serviceName}"));
+		$service = SentrySocial::make($serviceName);
 
 		// If we have an access code
 		if ($code = Input::get('code'))

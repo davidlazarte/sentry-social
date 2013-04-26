@@ -77,9 +77,9 @@ class SentrySocialServiceProvider extends \Illuminate\Support\ServiceProvider {
 	 */
 	protected function registerSentrySocial()
 	{
-		$this->app['sentrysocial'] = $this->app->share(function($app)
+		$this->app['sentry.social'] = $this->app->share(function($app)
 		{
-			$connections = $app['config']['cartalyst/sentry-social::services.connections'];
+			$connections = $app['config']['cartalyst/sentry-social::connections'];
 
 			return new Manager(
 				$app['sentry'],

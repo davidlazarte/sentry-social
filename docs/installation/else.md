@@ -1,4 +1,4 @@
-### Installing Everywhere Elase
+### Installing Everywhere Else
 
 ##### Step 1
 
