@@ -33,7 +33,17 @@ class Libraries_OAuth2_Provider_Github extends Libraries_OAuth2_Provider
 			'access_token' => $token->access_token,
 		));
 
-		$user = json_decode(file_get_contents($url));
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+		curl_setopt($ch, CURLOPT_HEADER, false);
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_REFERER, $url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+		curl_setopt($ch, CURLOPT_USERAGENT, 'Sentry Social');
+		$result = curl_exec($ch);
+		curl_close($ch);
+
+		$user = json_decode($result);
 
 		// Create a response from the request
 		return array(
