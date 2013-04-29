@@ -19,9 +19,9 @@
  */
 
 use Cartalyst\SentrySocial\Services\ServiceInterface;
-use OAuth\OAuth1\Service\Facebook as BaseService;
+use OAuth\OAuth1\Service\Twitter as BaseService;
 
-class Facebook extends BaseService implements ServiceInterface {
+class Twitter extends BaseService implements ServiceInterface {
 
 	/**
 	 * THe service name.
