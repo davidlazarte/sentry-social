@@ -19,6 +19,7 @@
  */
 
 use OAuth\Common\Http\Client\ClientInterface;
+use OAuth\Common\Http\Uri\UriInterface;
 use Requests;
 
 class RequestsClient implements ClientInterface {
