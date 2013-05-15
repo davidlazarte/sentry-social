@@ -135,17 +135,42 @@ class Manager {
 	 * Authenticates the given Sentry Social OAuth service.
 	 *
 	 * @param  Cartalyst\SentrySocial\Services\ServiceInterface  $service
-	 * @param  string  $code
+	 * @param  string  $access
 	 * @param  bool    $remember
 	 * @return Cartalyst\Sentry\Users\UserInterface  $user
 	 * @todo   Add a "email_changed_from_social" field to `users` and update
 	 *         email address if different when authenticating??
 	 */
-	public function authenticate(ServiceInterface $service, $code, $remember = false)
+	public function authenticate(ServiceInterface $service, $access, $remember = false)
 	{
 		$this->sentry->logout();
 
-		$service->requestAccessToken($code);
+		// OAuth 1
+		if (is_array($access))
+		{
+			if (count($access) != 2)
+			{
+				throw new \RuntimeException("If access is an array, we are dealing with OAuth 1 where the first parameter is the request token and the second parameter is the request verifier.");
+			}
+
+			list($requestToken, $requestVerifier) = $access;
+
+			$token = $service->getStorage()->retrieveAccessToken();
+
+			$service->requestAccessToken(
+				$requestToken,
+				$requestVerifier,
+				$token->getRequestTokenSecret()
+			);
+
+			die('yay');
+		}
+
+		// OAuth 2
+		else
+		{
+			$service->requestAccessToken($access);
+		}
 
 		$serviceName = $service->getServiceName();
 		$uid         = $service->getUserUniqueIdentifier();

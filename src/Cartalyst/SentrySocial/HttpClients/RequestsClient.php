@@ -30,32 +30,36 @@ class RequestsClient implements ClientInterface {
 	 *
 	 * @abstract
 	 * @param UriInterface $endpoint
-	 * @param mixed $requestBody
-	 * @param array $extraHeaders
+	 * @param mixed $data
+	 * @param array $headers
 	 * @param string $method
 	 * @return string
 	 * @throws TokenResponseException
 	 */
-	public function retrieveResponse(UriInterface $endpoint, $requestBody, array $extraHeaders = array(), $method = 'POST')
+	public function retrieveResponse(UriInterface $endpoint, $data, array $headers = array(), $method = 'POST')
 	{
 		$uri          = $endpoint->getAbsoluteUri();
-		$extraHeaders = array_merge(array(
+		$headers = array_merge(array(
 			'Content-type' => 'application/x-www-form-urlencoded',
 			'Host'         => $endpoint->getHost(),
 			'Connection'   => 'close',
-		), $extraHeaders);
-		$options      = array();
+		), $headers);
+
+		if (is_array($data))
+		{
+			$data = http_build_query($data);
+		}
 
 		switch ($method)
 		{
 			case 'post':
 			case 'put':
 			case 'patch':
-				$response = Requests::request($uri, $extraHeaders, $requestBody, strtoupper($method), $options);
+				$response = Requests::request($uri, $headers, $data, strtoupper($method), $options);
 				break;
 
 			default:
-				$response = Requests::request($uri, $extraHeaders, null, strtoupper($method), $options);
+				$response = Requests::request($uri, $headers, null, strtoupper($method));
 				break;
 		}
 
@@ -63,7 +67,19 @@ class RequestsClient implements ClientInterface {
 		// good response which should allow the dev
 		// to learn what went wrong rather than
 		// fail silently.
-		$response->throw_for_status();
+		try
+		{
+			$response->throw_for_status();
+		}
+		catch (\Exception $e)
+		{
+			if (isset($headers['Authorization']))
+			{
+				echo '<pre>'.print_r($headers['Authorization'], true).'</pre>';
+			}
+			dd([$uri, $headers, $data, strtoupper($method)], $response);
+			throw $e;
+		}
 
 		return $response->body;
 	}
