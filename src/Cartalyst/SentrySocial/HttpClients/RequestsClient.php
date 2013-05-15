@@ -38,24 +38,34 @@ class RequestsClient implements ClientInterface {
 	 */
 	public function retrieveResponse(UriInterface $endpoint, $requestBody, array $extraHeaders = array(), $method = 'POST')
 	{
-		$uri     = $endpoint->getAbsoluteUri();
-		$headers = array();
-		$options = array();
+		$uri          = $endpoint->getAbsoluteUri();
+		$extraHeaders = array_merge(array(
+			'Content-type' => 'application/x-www-form-urlencoded',
+			'Host'         => $endpoint->getHost(),
+			'Connection'   => 'close',
+		), $extraHeaders);
+		$options      = array();
 
 		switch ($method)
 		{
 			case 'post':
 			case 'put':
 			case 'patch':
-				$request = Requests::create($uri, $headers, $options);
+				$response = Requests::request($uri, $extraHeaders, $requestBody, strtoupper($method), $options);
 				break;
 
 			default:
-				$request = Requests::create($uri, $headers, $requestBody, $options);
+				$response = Requests::request($uri, $extraHeaders, null, strtoupper($method), $options);
 				break;
 		}
 
-		var_dump($request);
+		// We'll throw an Exception if we didn't get a
+		// good response which should allow the dev
+		// to learn what went wrong rather than
+		// fail silently.
+		$response->throw_for_status();
+
+		return $response->body;
 	}
 
 }

@@ -60,7 +60,7 @@ class ServiceFactory {
 	 */
 	public function __construct(HttpClientInterface $httpClient = null)
 	{
-		$this->httpClient = $httpClient ?: new RequestsClient;
+		$this->httpClient = $httpClient ?: new HttpRequestsClient;
 	}
 
 	/**
