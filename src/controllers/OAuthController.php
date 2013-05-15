@@ -67,25 +67,34 @@ class OAuthController extends Controller {
 	 */
 	public function getCallback($serviceName)
 	{
-		$service = SentrySocial::make($serviceName);
+		$service = SentrySocial::make($serviceName, URL::to("oauth/callback/{$serviceName}"));
 
-		// If we have an access code
+		// If we have an access code from an OAuth 2 service
 		if ($code = Input::get('code'))
 		{
-			try
-			{
-				if (SentrySocial::authenticate($service, $code))
-				{
-					return Redirect::to('oauth/authenticated');
-				}
-			}
-			catch (Exception $e)
-			{
-				return Redirect::to('oauth')->withErrors($e->getMessage());
-			}
+			$access = $code;
 		}
 
-		App::abort(404);
+		// If we have request token and verifier from an OAuth 1 service
+		elseif ($requestToken = Input::get('oauth_token'))
+		{
+			$access = array($requestToken, Input::get('oauth_verifier'));
+		}
+
+		// Otherwise, we'll abort now
+		else App::abort(404);
+
+		try
+		{
+			if (SentrySocial::authenticate($service, $access))
+			{
+				return Redirect::to('oauth/authenticated');
+			}
+		}
+		catch (Exception $e)
+		{
+			return Redirect::to('oauth')->withErrors($e->getMessage());
+		}
 	}
 
 	/**
