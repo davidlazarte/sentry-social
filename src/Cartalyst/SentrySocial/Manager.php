@@ -162,8 +162,6 @@ class Manager {
 				$requestVerifier,
 				$token->getRequestTokenSecret()
 			);
-
-			die('yay');
 		}
 
 		// OAuth 2
