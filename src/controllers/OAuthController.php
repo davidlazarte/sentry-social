@@ -93,7 +93,7 @@ class OAuthController extends Controller {
 		}
 		catch (Exception $e)
 		{
-			return Redirect::route('login')->withErrors($e->getMessage());
+			return Redirect::to('oauth')->withErrors($e->getMessage());
 		}
 	}
 
