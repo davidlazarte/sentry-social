@@ -69,8 +69,20 @@ class OAuthController extends Controller {
 	{
 		$service = SentrySocial::make($serviceName, URL::to("oauth/callback/{$serviceName}"));
 
+		// If there is an error passed back from the OAuth service
+		if ($error = Input::get('error'))
+		{
+			throw new Exception($error);
+		}
+
+		// If the user has denied access for the OAuth application
+		if (Input::get('denied'))
+		{
+			throw new Exception("You have denied [$serviceName] access.");
+		}
+
 		// If we have an access code from an OAuth 2 service
-		if ($code = Input::get('code'))
+		elseif ($code = Input::get('code'))
 		{
 			$access = $code;
 		}
