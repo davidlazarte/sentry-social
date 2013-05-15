@@ -19,9 +19,9 @@
  */
 
 use Cartalyst\SentrySocial\Services\ServiceInterface;
-use OAuth\OAuth1\Service\Facebook as BaseService;
+use OAuth\OAuth1\Service\Twitter as BaseService;
 
-class Facebook extends BaseService implements ServiceInterface {
+class Twitter extends BaseService implements ServiceInterface {
 
 	/**
 	 * THe service name.
@@ -36,6 +36,24 @@ class Facebook extends BaseService implements ServiceInterface {
 	 * @var array
 	 */
 	protected $cachedInfo = array();
+
+	/**
+	 * Returns the url to redirect to for authorization purposes.
+	 *
+	 * @param array $additionalParameters
+	 * @return string
+	 */
+	public function getAuthorizationUri(array $additionalParameters = array())
+	{
+		if ( ! isset($additionalParameters['oauth_token']))
+		{
+			$token = $this->requestRequestToken();
+
+			$additionalParameters['oauth_token'] = $token->getRequestToken();
+		}
+
+		return parent::getAuthorizationUri($additionalParameters);
+	}
 
 	/**
 	 * Gets the service name, or "alias".
@@ -103,7 +121,7 @@ class Facebook extends BaseService implements ServiceInterface {
 	{
 		if (empty($this->cachedInfo))
 		{
-			$this->cachedInfo = reset(json_decode($this->request('users/lookup.json', true));
+			$this->cachedInfo = reset(json_decode($this->request('users/lookup.json', true)));
 		}
 
 		return $this->cachedInfo;

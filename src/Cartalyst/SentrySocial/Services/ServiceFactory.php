@@ -18,6 +18,7 @@
  * @link       http://cartalyst.com
  */
 
+use Cartalyst\SentrySocial\HttpClients\RequestsClient as HttpRequestsClient;
 use OAuth\Common\Consumer\Credentials;
 use OAuth\Common\Http\Client\ClientInterface as HttpClientInterface;
 use OAuth\Common\Http\Client\StreamClient as HttpStreamClient;
@@ -59,7 +60,7 @@ class ServiceFactory {
 	 */
 	public function __construct(HttpClientInterface $httpClient = null)
 	{
-		$this->httpClient = $httpClient ?: new HttpStreamClient;
+		$this->httpClient = $httpClient ?: new RequestsClient;
 	}
 
 	/**
