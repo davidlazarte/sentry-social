@@ -67,25 +67,46 @@ class OAuthController extends Controller {
 	 */
 	public function getCallback($serviceName)
 	{
-		$service = SentrySocial::make($serviceName);
+		$service = SentrySocial::make($serviceName, URL::to("oauth/callback/{$serviceName}"));
 
-		// If we have an access code
-		if ($code = Input::get('code'))
+		// If there is an error passed back from the OAuth service
+		if ($error = Input::get('error'))
 		{
-			try
-			{
-				if (SentrySocial::authenticate($service, $code))
-				{
-					return Redirect::to('oauth/authenticated');
-				}
-			}
-			catch (Exception $e)
-			{
-				return Redirect::to('oauth')->withErrors($e->getMessage());
-			}
+			throw new Exception($error);
 		}
 
-		App::abort(404);
+		// If the user has denied access for the OAuth application
+		if (Input::get('denied'))
+		{
+			throw new Exception("You have denied [$serviceName] access.");
+		}
+
+		// If we have an access code from an OAuth 2 service
+		elseif ($code = Input::get('code'))
+		{
+			$access = $code;
+		}
+
+		// If we have request token and verifier from an OAuth 1 service
+		elseif ($requestToken = Input::get('oauth_token'))
+		{
+			$access = array($requestToken, Input::get('oauth_verifier'));
+		}
+
+		// Otherwise, we'll abort now
+		else App::abort(404);
+
+		try
+		{
+			if (SentrySocial::authenticate($service, $access))
+			{
+				return Redirect::to('oauth/authenticated');
+			}
+		}
+		catch (Exception $e)
+		{
+			return Redirect::to('oauth')->withErrors($e->getMessage());
+		}
 	}
 
 	/**

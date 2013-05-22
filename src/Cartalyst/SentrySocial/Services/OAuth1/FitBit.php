@@ -38,6 +38,24 @@ class FitBit extends BaseService implements ServiceInterface {
 	protected $cachedInfo = array();
 
 	/**
+	 * Returns the url to redirect to for authorization purposes.
+	 *
+	 * @param array $additionalParameters
+	 * @return string
+	 */
+	public function getAuthorizationUri(array $additionalParameters = array())
+	{
+		if ( ! isset($additionalParameters['oauth_token']))
+		{
+			$token = $this->requestRequestToken();
+
+			$additionalParameters['oauth_token'] = $token->getRequestToken();
+		}
+
+		return parent::getAuthorizationUri($additionalParameters);
+	}
+
+	/**
 	 * Gets the service name, or "alias".
 	 *
 	 * @return string

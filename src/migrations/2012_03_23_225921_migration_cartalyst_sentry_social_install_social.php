@@ -32,7 +32,7 @@ class MigrationCartalystSentrySocialInstallSocial extends Migration {
 		Schema::create('social', function($table)
 		{
 			$table->increments('id');
-			$table->integer('user_id')->unsigned();
+			$table->integer('user_id')->nullable();
 			$table->string('service');
 			$table->string('uid');
 			$table->timestamps();

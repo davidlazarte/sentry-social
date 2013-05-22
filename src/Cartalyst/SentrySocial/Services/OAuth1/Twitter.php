@@ -38,6 +38,24 @@ class Twitter extends BaseService implements ServiceInterface {
 	protected $cachedInfo = array();
 
 	/**
+	 * Returns the url to redirect to for authorization purposes.
+	 *
+	 * @param array $additionalParameters
+	 * @return string
+	 */
+	public function getAuthorizationUri(array $additionalParameters = array())
+	{
+		if ( ! isset($additionalParameters['oauth_token']))
+		{
+			$token = $this->requestRequestToken();
+
+			$additionalParameters['oauth_token'] = $token->getRequestToken();
+		}
+
+		return parent::getAuthorizationUri($additionalParameters);
+	}
+
+	/**
 	 * Gets the service name, or "alias".
 	 *
 	 * @return string
@@ -103,7 +121,7 @@ class Twitter extends BaseService implements ServiceInterface {
 	{
 		if (empty($this->cachedInfo))
 		{
-			$this->cachedInfo = reset(json_decode($this->request('users/lookup.json', true)));
+			$this->cachedInfo = json_decode($this->request('account/verify_credentials.json'), true);
 		}
 
 		return $this->cachedInfo;

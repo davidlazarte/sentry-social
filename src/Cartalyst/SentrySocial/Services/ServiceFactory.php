@@ -18,9 +18,9 @@
  * @link       http://cartalyst.com
  */
 
+use Cartalyst\SentrySocial\HttpClients\StreamClient as HttpStreamClient;
 use OAuth\Common\Consumer\Credentials;
 use OAuth\Common\Http\Client\ClientInterface as HttpClientInterface;
-use OAuth\Common\Http\Client\StreamClient as HttpStreamClient;
 use OAuth\Common\Exception\Exception as OAuthException;
 use OAuth\Common\Service\ServiceInterface;
 use OAuth\Common\Storage\TokenStorageInterface;

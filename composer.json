@@ -28,7 +28,8 @@
 		"php": ">=5.3.3",
 
 		"cartalyst/sentry": "2.0.*",
-		"lusitanian/oauth": "0.1.*"
+		"lusitanian/oauth": "0.1.*",
+		"rmccue/requests": ">=1.0"
 	},
 	"require-dev": {
 		"mockery/mockery": "0.7.2",
