@@ -37,6 +37,7 @@ class MigrationCartalystSentrySocialInstallSocial extends Migration {
 			$table->string('uid');
 			$table->timestamps();
 
+			$table->engine = 'InnoDB';
 			$table->unique(array('user_id', 'service'));
 			$table->unique(array('service', 'uid'));
 		});
