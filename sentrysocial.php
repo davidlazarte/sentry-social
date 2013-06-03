@@ -202,9 +202,9 @@ class SentrySocial
 					$can_auto_create = ($email) ? true : false;
 				}
 
-                if (!Config::get('sentrysocial::can_auto_create')) {
-                    $can_auto_create = false;
-                }
+				if (!Config::get('sentrysocial::can_auto_create')) {
+					$can_auto_create = false;
+				}
 
 				// if we have the email or username and matches sentry's login column, we'll auto register
 				if ($can_auto_create)
