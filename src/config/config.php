@@ -119,6 +119,13 @@ return array(
 			'scopes' => array(),
 		),
 
+		'vkontakte' => array(
+			'name'   => 'Vkontakte',
+			'key'    => '',
+			'secret' => '',
+			'scopes' => array(),
+		),
+
 		/*
 		// Example of using a different key to the "service"
 		// "service" used. This allows for multiple
