@@ -50,7 +50,7 @@ class Connection {
 	 */
 	public function setService($service)
 	{
-		$this->service = $service;
+		$this->service = ucfirst($service);
 	}
 
 	/**
