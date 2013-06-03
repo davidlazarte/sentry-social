@@ -16,7 +16,7 @@
 
 return array(
 
-    'can_auto_create' => true,
+	'can_auto_create' => true,
 
 	/**
 	 * URL's
