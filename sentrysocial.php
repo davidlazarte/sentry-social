@@ -202,7 +202,8 @@ class SentrySocial
 					$can_auto_create = ($email) ? true : false;
 				}
 
-				if (!Config::get('sentrysocial::can_auto_create')) {
+				if ( ! Config::get('sentrysocial::can_auto_create'))
+				{
 					$can_auto_create = false;
 				}
 
