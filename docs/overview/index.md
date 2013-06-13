@@ -27,6 +27,7 @@ Click [here](https://www.cartalyst.com/pricing) to obtain your subscription.
 * Foursquare
 * GitHub
 * Google
+* LinkedIn
 * Microsoft
 * SoundCloud
 * Yammer
