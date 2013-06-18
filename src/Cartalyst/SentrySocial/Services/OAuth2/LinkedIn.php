@@ -68,7 +68,7 @@ class LinkedIn extends BaseService implements ServiceInterface {
 	{
 		if ( ! isset($additionalParameters['state']))
 		{
-			$additionalParameters['state'] = Str::random(22);
+			$additionalParameters['state'] = \Str::random(22);
 		}
 
 		return parent::getAuthorizationUri($additionalParameters);
