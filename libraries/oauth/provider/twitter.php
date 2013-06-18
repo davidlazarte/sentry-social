@@ -46,7 +46,7 @@ class Libraries_OAuth_Provider_Twitter extends Libraries_OAuth_Provider {
 	public function get_user_info(Libraries_OAuth_Consumer $consumer, Libraries_OAuth_Token $token)
 	{
 		// Create a new GET request with the required parameters
-		$request = Libraries_OAuth_Request::make('resource', 'GET', 'http://api.twitter.com/1/users/lookup.json', array(
+		$request = Libraries_OAuth_Request::make('resource', 'GET', 'http://api.twitter.com/1.1/users/lookup.json', array(
 			'oauth_consumer_key' => $consumer->key,
 			'oauth_token'        => $token->access_token,
 			'user_id'            => $token->uid,
