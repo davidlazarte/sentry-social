@@ -20,6 +20,7 @@
 
 use Cartalyst\SentrySocial\Services\ServiceInterface;
 use OAuth\OAuth2\Service\LinkedIn as BaseService;
+use Str;
 
 class LinkedIn extends BaseService implements ServiceInterface {
 
@@ -59,19 +60,22 @@ class LinkedIn extends BaseService implements ServiceInterface {
 	}
 
 	/**
-	 * Returns the url to redirect to for authorization purposes. Sets the required 'state' parameter to a random string
+	 * Returns the url to redirect to for authorization purposes.
 	 *
-	 * @param array $additionalParameters
+	 * It automatically sets the required 'state' parameter to
+	 * a random string if none is provided.
+	 *
+	 * @param  array  $parameters
 	 * @return string
 	 */
-	public function getAuthorizationUri(array $additionalParameters = array())
+	public function getAuthorizationUri(array $parameters = array())
 	{
-		if ( ! isset($additionalParameters['state']))
+		if ( ! isset($parameters['state']))
 		{
-			$additionalParameters['state'] = \Str::random(22);
+			$parameters['state'] = Str::random(22);
 		}
 
-		return parent::getAuthorizationUri($additionalParameters);
+		return parent::getAuthorizationUri($parameters);
 	}
 
 	/**
