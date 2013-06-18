@@ -59,7 +59,7 @@ class LinkedIn extends BaseService implements ServiceInterface {
 	}
 
 	/**
-	 * Returns the url to redirect to for authorization purposes.
+	 * Returns the url to redirect to for authorization purposes. Sets the required 'state' parameter to a random string
 	 *
 	 * @param array $additionalParameters
 	 * @return string
@@ -68,7 +68,7 @@ class LinkedIn extends BaseService implements ServiceInterface {
 	{
 		if ( ! isset($additionalParameters['state']))
 		{
-			$additionalParameters['state'] = "DCEKDFF452934sdffef424";
+			$additionalParameters['state'] = Str::random(22);
 		}
 
 		return parent::getAuthorizationUri($additionalParameters);
@@ -114,7 +114,7 @@ class LinkedIn extends BaseService implements ServiceInterface {
 	 * Retuns an array of basic user information.
 	 *
 	 * @return array
-	 * @link   http://vk.com/pages.php?o=-1&p=getProfiles
+	 * @link   https://developer.linkedin.com/documents/authentication
 	 */
 	public function getUserInfo()
 	{
