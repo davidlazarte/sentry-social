@@ -66,7 +66,7 @@ class Google extends BaseService implements ServiceInterface {
 	public function getUserUniqueIdentifier()
 	{
 		$info = $this->getUserInfo();
-		return (int) $info['id'];
+		return $info['id'];
 	}
 
 	/**
