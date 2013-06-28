@@ -17,5 +17,5 @@ Once you have installed and initialized an instance of `Cartalyst\SentrySocial\M
 
 	$manager->register('name', array(
 		'key' => 'application_key_here',
-		'secre' => 'application_secret_here',
+		'secret' => 'application_secret_here',
 	));
