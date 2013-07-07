@@ -119,6 +119,20 @@ return array(
 			'scopes' => array(),
 		),
 
+		'vkontakte' => array(
+			'name'   => 'Vkontakte',
+			'key'    => '',
+			'secret' => '',
+			'scopes' => array(),
+		),
+
+		'linkedin' => array(
+			'name'   => 'LinkedIn',
+			'key'    => '',
+			'secret' => '',
+			'scopes' => array('r_fullprofile', 'r_emailaddress'),
+		),
+
 		/*
 		// Example of using a different key to the "service"
 		// "service" used. This allows for multiple

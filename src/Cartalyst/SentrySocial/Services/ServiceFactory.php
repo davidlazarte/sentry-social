@@ -165,6 +165,7 @@ class ServiceFactory {
 			return $this->oauth2Services[$serviceName];
 		}
 
+		$serviceName = ucfirst($serviceName);
 		$className = "\\Cartalyst\\SentrySocial\\Services\\OAuth2\\{$serviceName}";
 		if (class_exists($className)) return $className;
 	}
@@ -183,6 +184,7 @@ class ServiceFactory {
 			return $this->oauth1Services[$serviceName];
 		}
 
+		$serviceName = ucfirst($serviceName);
 		$className = "\\Cartalyst\\SentrySocial\\Services\\OAuth1\\{$serviceName}";
 		if (class_exists($className)) return $className;
 	}

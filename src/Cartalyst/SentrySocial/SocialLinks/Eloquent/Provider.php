@@ -18,7 +18,11 @@
  * @link       http://cartalyst.com
  */
 
+use Cartalyst\SentrySocial\Services\ServiceInterface;
+use Cartalyst\SentrySocial\SocialLinks\LinkInterface;
 use Cartalyst\SentrySocial\SocialLinks\ProviderInterface;
+use OAuth\OAuth1\Token\TokenInterface as OAuth1TokenInterface;
+use OAuth\Oauth2\Token\TokenInterface as OAuth2TokenInterface;
 
 class Provider implements ProviderInterface {
 
@@ -51,21 +55,25 @@ class Provider implements ProviderInterface {
 	 * @param  string  $userUniqueIdentifier
 	 * @return Cartalyst\SentrSocial\SocialLinks\LinkInterface
 	 */
-	public function findLink($serviceName, $userUniqueIdentifier)
+	public function findLink(ServiceInterface $service)
 	{
+		$serviceName = $service->getServiceName();
+		$uid         = $service->getUserUniqueIdentifier();
+
 		$query = $this
 			->createModel()
 			->newQuery()
 			->where('service', '=', $serviceName)
-			->where('uid', '=', $userUniqueIdentifier);
+			->where('uid', '=', $uid);
 
 		if ( ! $link = $query->first())
 		{
 			$link = $this->createModel();
 			$link->service = $serviceName;
-			$link->uid     = $userUniqueIdentifier;
-			$link->save();
+			$link->uid     = $uid;
 		}
+
+		$this->storeToken($service, $link);
 
 		return $link;
 	}
@@ -80,6 +88,25 @@ class Provider implements ProviderInterface {
 		$class = '\\'.ltrim($this->model, '\\');
 
 		return new $class;
+	}
+
+	protected function storeToken(ServiceInterface $service, LinkInterface $link)
+	{
+		$token = $service->getStorage()->retrieveAccessToken();
+
+		$link->access_token = $token->getAccessToken();
+		$link->end_of_life  = $token->getEndOfLife();
+		$link->extra_params = $token->getExtraParams();
+
+		if ($token instanceof OAuth1TokenInterface)
+		{
+			$link->request_token = $token->getRequestToken();
+			$link->request_token_secret = $token->getAccessTokenSecret();
+		}
+		else
+		{
+			$link->refresh_token = $token->getRefreshToken();
+		}
 	}
 
 }

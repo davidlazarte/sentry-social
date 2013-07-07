@@ -18,6 +18,8 @@
  * @link       http://cartalyst.com
  */
 
+use Cartalyst\SentrySocial\Services\ServiceInterface;
+
 interface ProviderInterface {
 
 	/**
@@ -28,6 +30,6 @@ interface ProviderInterface {
 	 * @param  string  $userUniqueIdentifier
 	 * @return Cartalyst\SentrSocial\SocialLinks\LinkInterface
 	 */
-	public function findLink($serviceName, $userUniqueIdentifier);
+	public function findLink(ServiceInterface $service);
 
 }

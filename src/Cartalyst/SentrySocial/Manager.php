@@ -24,6 +24,7 @@ use Cartalyst\SentrySocial\SocialLinks\Eloquent\Provider as SocialLinkProvider;
 use Cartalyst\SentrySocial\SocialLinks\ProviderInterface as SocialLinkProviderInterface;
 use Cartalyst\SentrySocial\Services\ServiceInterface;
 use Cartalyst\SentrySocial\Services\ServiceFactory;
+use Cartalyst\Sentry\Users\UserInterface;
 use Illuminate\Database\Eloquent\Model;
 use OAuth\Common\Consumer\Credentials;
 
@@ -131,20 +132,8 @@ class Manager {
 		return $this->serviceFactory->createService($service, $credentials, $storage, $connection->getScopes());
 	}
 
-	/**
-	 * Authenticates the given Sentry Social OAuth service.
-	 *
-	 * @param  Cartalyst\SentrySocial\Services\ServiceInterface  $service
-	 * @param  string  $access
-	 * @param  bool    $remember
-	 * @return Cartalyst\Sentry\Users\UserInterface  $user
-	 * @todo   Add a "email_changed_from_social" field to `users` and update
-	 *         email address if different when authenticating??
-	 */
-	public function authenticate(ServiceInterface $service, $access, $remember = false)
+	public function requestAccessToken(ServiceInterface $service, $access)
 	{
-		$this->sentry->logout();
-
 		// OAuth 1
 		if (is_array($access))
 		{
@@ -169,11 +158,14 @@ class Manager {
 		{
 			$service->requestAccessToken($access);
 		}
+	}
 
+	public function linkUser(ServiceInterface $service)
+	{
 		$serviceName = $service->getServiceName();
 		$uid         = $service->getUserUniqueIdentifier();
 
-		$link = $this->socialLinkProvider->findLink($serviceName, $uid);
+		$link = $this->socialLinkProvider->findLink($service);
 
 		// If we have no user associated with the link, we'll register one now
 		if ( ! $user = $link->getUser())
@@ -217,10 +209,15 @@ class Manager {
 				$user = $provider->create($attributes);
 				$user->attemptActivation($user->getActivationCode());
 			}
-
-			$link->setUser($user);
 		}
 
+		$link->setUser($user);
+
+		return $user;
+	}
+
+	public function login(UserInterface $user, $remember)
+	{
 		$throttleProvider = $this->sentry->getThrottleProvider();
 
 		// Now, we'll check throttling to ensure we're
@@ -236,6 +233,27 @@ class Manager {
 		}
 
 		$this->sentry->login($user, $remember);
+	}
+
+	/**
+	 * Authenticates the given Sentry Social OAuth service.
+	 *
+	 * @param  Cartalyst\SentrySocial\Services\ServiceInterface  $service
+	 * @param  string  $access
+	 * @param  bool    $remember
+	 * @return Cartalyst\Sentry\Users\UserInterface  $user
+	 * @todo   Add a "email_changed_from_social" field to `users` and update
+	 *         email address if different when authenticating??
+	 */
+	public function authenticate(ServiceInterface $service, $access, $remember = false)
+	{
+		$this->sentry->logout();
+
+		$this->requestAccessToken($service, $access);
+
+		$user = $this->linkUser($service);
+
+		$this->login($user, $remember);
 
 		return $user;
 	}

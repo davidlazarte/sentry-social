@@ -71,4 +71,14 @@ class SocialLink extends Model implements LinkInterface {
 		$this->save();
 	}
 
+	public function setExtraParamsAttribute(array $extraParams)
+	{
+		$this->attributes['extra_params'] = json_encode($extraParams);
+	}
+
+	public function getExtraParamsAttribute($extraParams)
+	{
+		return json_decode($extraParams, true);
+	}
+
 }
