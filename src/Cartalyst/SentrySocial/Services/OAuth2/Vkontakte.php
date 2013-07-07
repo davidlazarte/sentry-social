@@ -19,9 +19,9 @@
  */
 
 use Cartalyst\SentrySocial\Services\ServiceInterface;
-use OAuth\OAuth2\Service\Google as BaseService;
+use OAuth\OAuth2\Service\Vkontakte as BaseService;
 
-class Google extends BaseService implements ServiceInterface {
+class Vkontakte extends BaseService implements ServiceInterface {
 
 	/**
 	 * THe service name.
@@ -66,7 +66,7 @@ class Google extends BaseService implements ServiceInterface {
 	public function getUserUniqueIdentifier()
 	{
 		$info = $this->getUserInfo();
-		return $info['id'];
+		return (int) $info['uid'];
 	}
 
 	/**
@@ -77,13 +77,6 @@ class Google extends BaseService implements ServiceInterface {
 	 */
 	public function getUserEmail()
 	{
-		$info = $this->getUserInfo();
-
-		if (isset($info['email']))
-		{
-			return $info['email'];
-		}
-
 		return null;
 	}
 
@@ -97,20 +90,29 @@ class Google extends BaseService implements ServiceInterface {
 	public function getUserName()
 	{
 		$info = $this->getUserInfo();
-		return array($info['given_name'], $info['family_name']);
+		return array($info['first_name'], $info['last_name']);
 	}
 
 	/**
 	 * Retuns an array of basic user information.
 	 *
 	 * @return array
-	 * @link   https://developers.google.com/accounts/docs/OAuth2Login#userinfocall
+	 * @link   http://vk.com/pages.php?o=-1&p=getProfiles
 	 */
 	public function getUserInfo()
 	{
 		if (empty($this->cachedInfo))
 		{
-			$this->cachedInfo = json_decode($this->request('https://www.googleapis.com/oauth2/v1/userinfo'), true);
+			$token = $this->storage->retrieveAccessToken();
+			
+			$tokenExtraParams = $token->getExtraParams();
+			$uid = (int) $tokenExtraParams['user_id'];
+				
+			// optional
+			$fields = 'first_name,last_name,nickname,screen_name,sex,bdate,timezone,photo_rec,photo_big';
+			
+			$response = json_decode($this->request("getProfiles?uid={$uid}&fields={$fields}"), true);
+			$this->cachedInfo = $response['response'][0];
 		}
 
 		return $this->cachedInfo;

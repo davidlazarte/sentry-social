@@ -19,9 +19,10 @@
  */
 
 use Cartalyst\SentrySocial\Services\ServiceInterface;
-use OAuth\OAuth2\Service\Google as BaseService;
+use OAuth\OAuth2\Service\LinkedIn as BaseService;
+use Str;
 
-class Google extends BaseService implements ServiceInterface {
+class LinkedIn extends BaseService implements ServiceInterface {
 
 	/**
 	 * THe service name.
@@ -59,6 +60,25 @@ class Google extends BaseService implements ServiceInterface {
 	}
 
 	/**
+	 * Returns the url to redirect to for authorization purposes.
+	 *
+	 * It automatically sets the required 'state' parameter to
+	 * a random string if none is provided.
+	 *
+	 * @param  array  $parameters
+	 * @return string
+	 */
+	public function getAuthorizationUri(array $parameters = array())
+	{
+		if ( ! isset($parameters['state']))
+		{
+			$parameters['state'] = Str::random(22);
+		}
+
+		return parent::getAuthorizationUri($parameters);
+	}
+
+	/**
 	 * Returns the user's unique identifier on the service.
 	 *
 	 * @return mixed
@@ -78,13 +98,7 @@ class Google extends BaseService implements ServiceInterface {
 	public function getUserEmail()
 	{
 		$info = $this->getUserInfo();
-
-		if (isset($info['email']))
-		{
-			return $info['email'];
-		}
-
-		return null;
+		return $info['emailAddress'];
 	}
 
 	/**
@@ -97,20 +111,26 @@ class Google extends BaseService implements ServiceInterface {
 	public function getUserName()
 	{
 		$info = $this->getUserInfo();
-		return array($info['given_name'], $info['family_name']);
+		return array($info['firstName'], $info['lastName']);
 	}
 
 	/**
 	 * Retuns an array of basic user information.
 	 *
 	 * @return array
-	 * @link   https://developers.google.com/accounts/docs/OAuth2Login#userinfocall
+	 * @link   https://developer.linkedin.com/documents/authentication
 	 */
 	public function getUserInfo()
 	{
 		if (empty($this->cachedInfo))
 		{
-			$this->cachedInfo = json_decode($this->request('https://www.googleapis.com/oauth2/v1/userinfo'), true);
+			$token = $this->storage->retrieveAccessToken();
+
+			// optional
+			$fields = 'id,first-name,last-name,email-address,picture-url';
+
+			$response = json_decode($this->request("/people/~:({$fields})?format=json"), true);
+			$this->cachedInfo = $response;
 		}
 
 		return $this->cachedInfo;
