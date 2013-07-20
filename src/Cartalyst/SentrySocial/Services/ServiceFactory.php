@@ -165,7 +165,7 @@ class ServiceFactory {
 			return $this->oauth2Services[$serviceName];
 		}
 
-		$serviceName = ucfirst($serviceName);
+		$serviceName = \Config::get("cartalyst/sentry-social::connections.{$serviceName}.name");
 		$className = "\\Cartalyst\\SentrySocial\\Services\\OAuth2\\{$serviceName}";
 		if (class_exists($className)) return $className;
 	}
@@ -184,7 +184,7 @@ class ServiceFactory {
 			return $this->oauth1Services[$serviceName];
 		}
 
-		$serviceName = ucfirst($serviceName);
+		$serviceName = \Config::get("cartalyst/sentry-social::connections.{$serviceName}.name");
 		$className = "\\Cartalyst\\SentrySocial\\Services\\OAuth1\\{$serviceName}";
 		if (class_exists($className)) return $className;
 	}
