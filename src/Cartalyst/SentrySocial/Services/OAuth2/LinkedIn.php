@@ -19,7 +19,7 @@
  */
 
 use Cartalyst\SentrySocial\Services\ServiceInterface;
-use OAuth\OAuth2\Service\LinkedIn as BaseService;
+use OAuth\OAuth2\Service\Linkedin as BaseService;
 use Str;
 
 class LinkedIn extends BaseService implements ServiceInterface {
