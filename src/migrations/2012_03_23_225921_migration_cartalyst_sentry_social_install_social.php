@@ -33,8 +33,8 @@ class MigrationCartalystSentrySocialInstallSocial extends Migration {
 		{
 			$table->increments('id');
 			$table->integer('user_id')->unsigned();
-			$table->string('service');
-			$table->string('uid');
+			$table->string('service', 127);
+			$table->string('uid', 127);
 			$table->timestamps();
 
 			$table->unique(array('user_id', 'service'));
