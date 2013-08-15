@@ -85,7 +85,8 @@ class SentrySocialServiceProvider extends \Illuminate\Support\ServiceProvider {
 				$app['sentry'],
 				$app['sentry.social.link'],
 				$app['sentry.social.factory'],
-				$connections
+				$connections,
+				$app['events']
 			);
 		});
 	}

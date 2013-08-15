@@ -92,7 +92,10 @@ class Provider implements ProviderInterface {
 
 	protected function storeToken(ServiceInterface $service, LinkInterface $link)
 	{
-		$token = $service->getStorage()->retrieveAccessToken();
+		// Hacky, I know.
+		$token = $service
+		    ->getStorage()
+		    ->retrieveAccessToken(preg_replace('/^.*\\\\/', '', get_class($service)));
 
 		$link->access_token = $token->getAccessToken();
 		$link->end_of_life  = $token->getEndOfLife();

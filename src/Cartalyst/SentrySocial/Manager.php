@@ -26,6 +26,7 @@ use Cartalyst\SentrySocial\Services\ServiceInterface;
 use Cartalyst\SentrySocial\Services\ServiceFactory;
 use Cartalyst\Sentry\Users\UserInterface;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Events\Dispatcher;
 use OAuth\Common\Consumer\Credentials;
 
 class Manager {
@@ -61,18 +62,31 @@ class Manager {
 	protected $connections = array();
 
 	/**
+	 * The event dispatcher instance.
+	 *
+	 * @var Illuminate\Events\Dispacher
+	 */
+	protected $dispatcher;
+
+	/**
 	 * Create a new Sentry Social manager.
 	 *
 	 * @param  Cartalyst\SentrySocial\SocialLinks\ProviderInterface  $socialLinkProvider
 	 * @param  Cartalyst\Sentry\ServiceFactory  $serviceFactory
 	 * @param  array  $connections
+	 * @param  Illuminate\Events\Dispatcher
 	 * @return void
 	 */
-	public function __construct(Sentry $sentry, SocialLinkProviderInterface $socialLinkProvider = null, ServiceFactory $serviceFactory = null, array $connections = array())
+	public function __construct(Sentry $sentry, SocialLinkProviderInterface $socialLinkProvider = null, ServiceFactory $serviceFactory = null, array $connections = array(), Dispatcher $dispatcher = null)
 	{
 		$this->sentry             = $sentry;
 		$this->socialLinkProvider = $socialLinkProvider ?: new SocialLinkProvider;
 		$this->serviceFactory     = $serviceFactory ?: new ServiceFactory;
+
+		if (isset($dispatcher))
+		{
+			$this->dispatcher = $dispatcher;
+		}
 
 		foreach ($connections as $name => $connection)
 		{
@@ -177,6 +191,8 @@ class Manager {
 			try
 			{
 				$user = $provider->findByLogin($login);
+
+				$this->fireEvent('existing', $user);
 			}
 			catch (UserNotFoundException $e)
 			{
@@ -208,7 +224,13 @@ class Manager {
 
 				$user = $provider->create($attributes);
 				$user->attemptActivation($user->getActivationCode());
+
+				$this->fireEvent('registered', $user);
 			}
+		}
+		else
+		{
+			$this->fireEvent('existing', $user);
 		}
 
 		$link->setUser($user);
@@ -266,6 +288,17 @@ class Manager {
 	public function getConnections()
 	{
 		return $this->connections;
+	}
+
+	/**
+	 * Set the event dispatcher.
+	 *
+	 * @param  Illuminate\Events\Dispatcher
+	 * @return void
+	 */
+	public function setDispatcher(Dispacher $dispatcher)
+	{
+		$this->dispatcher = $dispatcher;
 	}
 
 	/**
@@ -357,6 +390,20 @@ class Manager {
 	protected function createStorage($serviceName)
 	{
 		return new \OAuth\Common\Storage\Session(true, 'oauth_token_'.$serviceName);
+	}
+
+	/**
+	 * Fires an event for Sentry Social.
+	 *
+	 * @param  string  $name
+	 * @param  Cartalyst\Sentry\Users\UserInterface  $user
+	 * @return mixed
+	 */
+	protected function fireEvent($name, UserInterface $user)
+	{
+		if ( ! isset($this->dispatcher)) return;
+
+		return $this->dispatcher->fire("sentry.social.{$name}", array($user));
 	}
 
 }
