@@ -6,8 +6,8 @@ DROP TABLE IF EXISTS `social`;
 CREATE TABLE `social` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(11) DEFAULT NULL,
-  `service` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-  `uid` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `service` varchar(127) COLLATE utf8_unicode_ci NOT NULL,
+  `uid` varchar(127) COLLATE utf8_unicode_ci NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `access_token` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
