@@ -100,8 +100,9 @@ class Provider implements ProviderInterface {
 
 		if ($token instanceof OAuth1TokenInterface)
 		{
+			$link->access_token_secret = $token->getAccessTokenSecret();
 			$link->request_token = $token->getRequestToken();
-			$link->request_token_secret = $token->getAccessTokenSecret();
+			$link->request_token_secret = $token->getRequestTokenSecret();
 		}
 		else
 		{
