@@ -37,6 +37,9 @@ class MigrationCartalystSentrySocialInstallSocial extends Migration {
 			$table->string('uid', 127);
 			$table->timestamps();
 
+			// We'll need to ensure that MySQL uses the InnoDB engine to
+			// support the indexes, other engines aren't affected.
+			$table->engine = 'InnoDB';
 			$table->unique(array('user_id', 'service'));
 			$table->unique(array('service', 'uid'));
 		});
