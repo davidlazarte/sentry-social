@@ -1,4 +1,4 @@
-<?php namespace Cartalyst\SentrySocial\SocialLinks;
+<?php namespace Cartalyst\SentrySocial\Links;
 /**
  * Part of the Sentry Social package.
  *
@@ -11,25 +11,14 @@
  * the following URL: http://www.opensource.org/licenses/BSD-3-Clause
  *
  * @package    Sentry
- * @version    2.0.0
+ * @version    3.0.0
  * @author     Cartalyst LLC
  * @license    BSD License (3-clause)
  * @copyright  (c) 2011 - 2013, Cartalyst LLC
  * @link       http://cartalyst.com
  */
 
-use Cartalyst\SentrySocial\Services\ServiceInterface;
-
 interface ProviderInterface {
 
-	/**
-	 * Finds the a social link object by the service name
-	 * and user's unique identifier.
-	 *
-	 * @param  string  $serviceName
-	 * @param  string  $userUniqueIdentifier
-	 * @return Cartalyst\SentrSocial\SocialLinks\LinkInterface
-	 */
-	public function findLink(ServiceInterface $service);
 
 }

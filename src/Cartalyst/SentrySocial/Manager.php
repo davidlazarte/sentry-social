@@ -11,399 +11,162 @@
  * the following URL: http://www.opensource.org/licenses/BSD-3-Clause
  *
  * @package    Sentry
- * @version    2.0.0
+ * @version    3.0.0
  * @author     Cartalyst LLC
  * @license    BSD License (3-clause)
  * @copyright  (c) 2011 - 2013, Cartalyst LLC
  * @link       http://cartalyst.com
  */
 
+use Cartalyst\Sentry\Sessions\SessionInterface;
 use Cartalyst\Sentry\Sentry;
-use Cartalyst\Sentry\Users\UserNotFoundException;
-use Cartalyst\SentrySocial\SocialLinks\Eloquent\Provider as SocialLinkProvider;
-use Cartalyst\SentrySocial\SocialLinks\ProviderInterface as SocialLinkProviderInterface;
-use Cartalyst\SentrySocial\Services\ServiceInterface;
-use Cartalyst\SentrySocial\Services\ServiceFactory;
-use Cartalyst\Sentry\Users\UserInterface;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Events\Dispatcher;
-use OAuth\Common\Consumer\Credentials;
 
 class Manager {
 
-	/**
-	 * The Sentry instance.
-	 *
-	 * @var Cartalyst\Sentry\Sentry
-	 */
 	protected $sentry;
 
-	/**
-	 * The social link provider, used for tying logins
-	 * to Sentry logins.
-	 *
-	 * @var Cartalyst\SentrySocial\SocialLinks\ProviderInterface
-	 */
-	protected $socialLinkProvider;
+	protected $session;
 
-	/**
-	 * The Service Factory, used for creating
-	 * service instances.
-	 *
-	 * @var Cartalyst\SentrySocial\ServiceFactory
-	 */
-	protected $serviceFactory;
+	protected $linkProvider;
 
-	/**
-	 * Array of registered connections.
-	 *
-	 * @var array
-	 */
 	protected $connections = array();
 
-	/**
-	 * The event dispatcher instance.
-	 *
-	 * @var Illuminate\Events\Dispacher
-	 */
-	protected $dispatcher;
-
-	/**
-	 * Create a new Sentry Social manager.
-	 *
-	 * @param  Cartalyst\SentrySocial\SocialLinks\ProviderInterface  $socialLinkProvider
-	 * @param  Cartalyst\Sentry\ServiceFactory  $serviceFactory
-	 * @param  array  $connections
-	 * @param  Illuminate\Events\Dispatcher
-	 * @return void
-	 */
-	public function __construct(Sentry $sentry, SocialLinkProviderInterface $socialLinkProvider = null, ServiceFactory $serviceFactory = null, array $connections = array(), Dispatcher $dispatcher = null)
+	public function __construct(Sentry $sentry, SessionInterface $session = null, LinkProviderInterface $linkProvider = null)
 	{
-		$this->sentry             = $sentry;
-		$this->socialLinkProvider = $socialLinkProvider ?: new SocialLinkProvider;
-		$this->serviceFactory     = $serviceFactory ?: new ServiceFactory;
 
-		if (isset($dispatcher))
-		{
-			$this->dispatcher = $dispatcher;
-		}
+	}
 
-		foreach ($connections as $name => $connection)
+	public function make($slug, $callbackUri = null)
+	{
+		$connection = $this->getConnection($slug);
+
+		return $this->createProvider($connection, $callbackUri);
+	}
+
+	public function addConnection($slug, array $connection)
+	{
+		$this->connections[$slug] = $connection;
+	}
+
+	public function addConnections(array $connections)
+	{
+		foreach ($connections as $slug => $connection)
 		{
-			$this->register($name, $connection);
+			$this->addConnection($connection);
 		}
 	}
 
-	/**
-	 * Registers a connection with the manager.
-	 *
-	 * @param  string  $slug
-	 * @param  array   $attributes
-	 * @return Cartalyst\SentrySocial\Connection  $connection
-	 */
-	public function register($slug, array $attributes)
+	public function getConnection($slug)
 	{
-		$connection = $this->createConnection($slug, $attributes);
-
-		return $this->connections[$slug] = $connection;
-	}
-
-	/**
-	 * Register a custom OAuth2 service with the Service Factory.
-	 *
-	 * @param  string  $className
-	 * @return void
-	 */
-	public function registerOAuth2Service($className)
-	{
-		$this->serviceFactory->registerOAuth2Service($className);
-	}
-
-	/**
-	 * Register a custom OAuth1 service with the Service Factory.
-	 *
-	 * @param  string  $className
-	 * @return void
-	 */
-	public function registerOAuth1Service($className)
-	{
-		$this->serviceFactory->registerOAuth1Service($className);
-	}
-
-	/**
-	 * Makes a new service from a connection with the given slug.
-	 *
-	 * @param  string  $slug
-	 * @param  string  $callback
-	 * @return Cartalyst\SentrySocial\Services\ServiceInterface
-	 */
-	public function make($slug, $callback = null)
-	{
-		$connection  = $this->getConnection($slug, $callback);
-		$credentials = $this->createCredentials($connection->getKey(), $connection->getSecret(), $callback);
-		$storage     = $this->createStorage($service = $connection->getService());
-
-		return $this->serviceFactory->createService($service, $credentials, $storage, $connection->getScopes());
-	}
-
-	public function requestAccessToken(ServiceInterface $service, $access)
-	{
-		// OAuth 1
-		if (is_array($access))
+		if ( ! isset($this->connections[$slug]))
 		{
-			if (count($access) != 2)
-			{
-				throw new \RuntimeException("If access is an array, we are dealing with OAuth 1 where the first parameter is the request token and the second parameter is the request verifier.");
-			}
-
-			list($requestToken, $requestVerifier) = $access;
-
-			$token = $service->getStorage()->retrieveAccessToken();
-
-			$service->requestAccessToken(
-				$requestToken,
-				$requestVerifier,
-				$token->getRequestTokenSecret()
-			);
+			throw new \RuntimeException("Cannot retrieve connection [$slug] as it has not been added.");
 		}
 
-		// OAuth 2
-		else
+		return $this->connections[$slug];
+	}
+
+	protected function createProvider($connection, $callbackUri = null)
+	{
+		$this->validateConnection($connection);
+
+		$oauthType = $this->determineOAuthType($connection['driver']);
+
+		if ($oauthType == 1)
 		{
-			$service->requestAccessToken($access);
+			return $this->createOAuth1Provider($connection, $callbackUri);
+		}
+
+		return $this->createOAuth2Provider($connection, $callbackUri);
+	}
+
+	protected function validateConnection($connection)
+	{
+		if ( ! isset($connection['driver']))
+		{
+			throw new \InvalidArgumentException("Class matching driver is required for [$slug] connection.");
+		}
+
+		if ( ! isset($connection['identifier']) or ! isset($connection['secret']))
+		{
+			throw new \InvalidArgumentException("App identifier and secret are required for [$slug] connection.");
 		}
 	}
 
-	public function linkUser(ServiceInterface $service)
+	protected function determineOAuthType($driver)
 	{
-		$serviceName = $service->getServiceName();
-		$uid         = $service->getUserUniqueIdentifier();
-
-		$link = $this->socialLinkProvider->findLink($service);
-
-		// If we have no user associated with the link, we'll register one now
-		if ( ! $user = $link->getUser())
+		// Built-in OAuth1 server
+		if (class_exists('League\\OAuth1\\Client\\Server\\'.$driver))
 		{
-			$provider = $this->sentry->getUserProvider();
-			$login    = $service->getUserEmail() ?: "{$uid}@{$serviceName}";
-
-			// Lazily create a user
-			try
-			{
-				$user = $provider->findByLogin($login);
-
-				$this->fireEvent('existing', $user);
-			}
-			catch (UserNotFoundException $e)
-			{
-				$emptyUser = $provider->getEmptyUser();
-
-				// Create a dummy password for the user
-				$passwordParams = array($serviceName, $uid, $login, time(), mt_rand());
-				shuffle($passwordParams);
-
-				// Setup an array of attributes we'll add onto
-				// so we can create our user.
-				$attributes = array(
-					$emptyUser->getLoginName()    => $login,
-					$emptyUser->getPasswordName() => implode('', $passwordParams),
-				);
-
-				// Some providers give a first / last name, some don't.
-				// If we only have one name, we'll just put it in the
-				// "first_name" attribute.
-				if (is_array($name = $service->getUserName()))
-				{
-					$attributes['first_name'] = $name[0];
-					$attributes['last_name']  = $name[1];
-				}
-				elseif (is_string($name))
-				{
-					$attributes['first_name'] = $name;
-				}
-
-				$user = $provider->create($attributes);
-				$user->attemptActivation($user->getActivationCode());
-
-				$this->fireEvent('registered', $user);
-			}
-		}
-		else
-		{
-			$this->fireEvent('existing', $user);
+			return 1;
 		}
 
-		$link->setUser($user);
-
-		return $user;
-	}
-
-	public function login(UserInterface $user, $remember)
-	{
-		$throttleProvider = $this->sentry->getThrottleProvider();
-
-		// Now, we'll check throttling to ensure we're
-		// not logging in a user which shouldn't be allowed.
-		if ($throttleProvider->isEnabled())
+		// Built-in OAuth2 provider
+		if (class_exists('League\\OAuth2\\Client\\Provider\\'.$driver))
 		{
-			$throttle = $throttleProvider->findByUserId(
-				$user->getId(),
-				$this->sentry->getIpAddress()
-			);
-
-			$throttle->check();
+			return 2;
 		}
 
-		$this->sentry->login($user, $remember);
-	}
-
-	/**
-	 * Authenticates the given Sentry Social OAuth service.
-	 *
-	 * @param  Cartalyst\SentrySocial\Services\ServiceInterface  $service
-	 * @param  string  $access
-	 * @param  bool    $remember
-	 * @return Cartalyst\Sentry\Users\UserInterface  $user
-	 * @todo   Add a "email_changed_from_social" field to `users` and update
-	 *         email address if different when authenticating??
-	 */
-	public function authenticate(ServiceInterface $service, $access, $remember = false)
-	{
-		$this->sentry->logout();
-
-		$this->requestAccessToken($service, $access);
-
-		$user = $this->linkUser($service);
-
-		$this->login($user, $remember);
-
-		return $user;
-	}
-
-	/**
-	 * Get the registered connections.
-	 *
-	 * @return array
-	 */
-	public function getConnections()
-	{
-		return $this->connections;
-	}
-
-	/**
-	 * Set the event dispatcher.
-	 *
-	 * @param  Illuminate\Events\Dispatcher
-	 * @return void
-	 */
-	public function setDispatcher(Dispacher $dispatcher)
-	{
-		$this->dispatcher = $dispatcher;
-	}
-
-	/**
-	 * Gets a connection registered with the manager with the given slug.
-	 * The callback URI can also can be overridden at runtime.
-	 *
-	 * @param  string|array  $name
-	 * @param  string  $callback
-	 * @return array
-	 */
-	protected function getConnection($slug, $callback = null)
-	{
-		// If our connection is already an array,
-		// the developer is creating a connection
-		// on the fly, without registering it.
-		if (is_array($slug))
+		// If the driver is a custom class which doesn't exist
+		if ( ! class_exists($driver))
 		{
-			$connection = $this->createConnection($slug);
+			throw new \RuntimeException("Failed to determine OAuth class [$driver] does not exist.");
 		}
 
-		// Otherwise, we will retrieve it from the array
-		// of registered connections.
-		else
-		{
-			if ( ! isset($this->connections[$slug]))
-			{
-				throw new \RuntimeException("Cannot make connection [$slug] as it has not been registered.");
-			}
+		$parent = $this->getHighestParent($driver);
 
-			$connection = $this->connections[$slug];
+		if ($parent == 'League\\OAuth1\\Client\\Server\\Server')
+		{
+			return 1;
 		}
 
-		// If a runtime callback has been passed, override the connection with it.
-		if (isset($callback))
+		if ($parent == 'League\\OAuth2\\Client\\Provider\\IdentityProvider')
 		{
-			$connection->setCallback($callback);
+			return 2;
 		}
 
-		return $connection;
+		throw new \RuntimeException("Driver [$driver] does not inherit from a compatible OAuth provider class.");
 	}
 
-	/**
-	 * Creates a connection from the given slug and attributes.
-	 *
-	 * @param  string  $slug
-	 * @param  array   $attributes
-	 * @return Cartalyst\SentrySocial\Connection  $connection
-	 */
-	protected function createConnection($slug, array $attributes)
+	protected function getHighestParent($driver)
 	{
-		$connection = new Connection;
-		$connection->setService(isset($attributes['service']) ? $attributes['service'] : $slug);
-		$connection->setName(isset($attributes['name']) ? $attributes['name'] : $connection->getService());
-		$connection->setKey($attributes['key']);
-		$connection->setSecret($attributes['secret']);
+		// Find out what interfaces the driver implements
+		$childClass = new \ReflectionClass($driver);
 
-		if (isset($attributes['scopes']))
+		while ($parentClass = $childClass->getParentClass())
 		{
-			$connection->setScopes($attributes['scopes']);
+			$parentName = $parentClass->getName();
+			$childClass = $parentClass;
 		}
 
-		if (isset($attributes['callback']))
-		{
-			$connection->setCallback($callback);
-		}
-
-		return $connection;
+		return $parentName;
 	}
 
-	/**
-	 * Creates a Credentials object from the given
-	 * application key, secret and callback URL.
-	 *
-	 * @param  string  $key
-	 * @param  string  $secret
-	 * @param  string  $callback
-	 * @return void
-	 */
-	protected function createCredentials($key, $secret, $callback)
+	protected function createOAuth1Provider($connection, $callbackUri = null)
 	{
-		return new Credentials($key, $secret, $callback);
+		$driver = $connection['driver'];
+
+		$credentials = array(
+			'identifier'   => $connection['identifier'],
+			'secret'       => $connection['secret'],
+			'callback_uri' => $callbackUri,
+		);
+
+		return new $driver($credentials);
 	}
 
-	/**
-	 * Creates a storage driver for the given service name.
-	 *
-	 *
-	 */
-	protected function createStorage($serviceName)
+	protected function createOAuth2Provider($connection, $callbackUri = null)
 	{
-		return new \OAuth\Common\Storage\Session(true, 'oauth_token_'.$serviceName);
-	}
+		$driver = $connection['driver'];
 
-	/**
-	 * Fires an event for Sentry Social.
-	 *
-	 * @param  string  $name
-	 * @param  Cartalyst\Sentry\Users\UserInterface  $user
-	 * @return mixed
-	 */
-	protected function fireEvent($name, UserInterface $user)
-	{
-		if ( ! isset($this->dispatcher)) return;
+		$options = array(
+			'clientId'     => $connection['identifier'],
+			'clientSecret' => $connection['secret'],
+			'redirectUri'  => $callbackUri,
+			'scopes'       => isset($connection['scopes']) ? $connection['scopes'] : array(),
+		);
 
-		return $this->dispatcher->fire("sentry.social.{$name}", array($user));
+		return new $driver($options);
 	}
 
 }
