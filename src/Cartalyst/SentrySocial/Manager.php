@@ -18,7 +18,11 @@
  * @link       http://cartalyst.com
  */
 
-use Cartalyst\Sentry\RequestProviders\ProviderInterface as RequestProviderInterface;
+use Cartalyst\SentrySocial\Links\Eloquent\Provider as LinkProvider;
+use Cartalyst\SentrySocial\Links\ProviderInterface as LinkProviderInterface;
+use Cartalyst\SentrySocial\RequestProviders\NativeProvider as NativeRequestProvider;
+use Cartalyst\SentrySocial\RequestProviders\ProviderInterface as RequestProviderInterface;
+use Cartalyst\Sentry\Sessions\NativeSession;
 use Cartalyst\Sentry\Sessions\SessionInterface;
 use Cartalyst\Sentry\Sentry;
 use Closure;
@@ -33,29 +37,46 @@ class Manager {
 
 	protected $linkProvider;
 
+	/**
+	 * The event dispatcher instance.
+	 *
+	 * @var Illuminate\Events\Dispacher
+	 */
+	protected $dispatcher;
+
 	protected $connections = array();
 
-	public function __construct(Sentry $sentry, RequestProviderInterface $requestProvider = null, SessionInterface $session = null, LinkProviderInterface $linkProvider = null)
+	protected $providers = array();
+
+	public function __construct(Sentry $sentry, RequestProviderInterface $requestProvider = null, SessionInterface $session = null, Dispacher $dispatcher = null, LinkProviderInterface $linkProvider = null)
 	{
 		$this->sentry = $sentry;
-		$this->requestProvider = $requestProvider;
-		$this->session = $session;
-		$this->linkProvider = $linkProvider;
+		$this->requestProvider = $requestProvider ?: new NativeRequestProvider;
+		$this->session = $session ?: new NativeSession('cartalyst_sentry_social');
+
+		if (isset($dispatcher))
+		{
+			$this->dispatcher = $dispatcher;
+		}
+
+		$this->linkProvider = $linkProvider ?: new LinkProvider;
 	}
 
 	public function make($slug, $callbackUri = null)
 	{
-		$connection = $this->getConnection($slug);
+		if ( ! isset($this->providers[$slug]))
+		{
+			$connection = $this->getConnection($slug);
 
-		return $this->createProvider($connection, $callbackUri);
+			$this->providers[$slug] = $this->createProvider($connection, $callbackUri);
+		}
+
+		return $this->providers[$slug];
 	}
 
-	public function getAuthorizeUri($provider, $callbackUri = null)
+	public function getAuthorizeUri($slug, $callbackUri = null)
 	{
-		if (is_string($provider))
-		{
-			$provider = $this->make($provider, $callbackUri);
-		}
+		$provider = $this->make($slug, $callbackUri);
 
 		// OAuth 1 is a three-legged authentication process
 		// and thus we need to grab temporary credentials
@@ -70,40 +91,104 @@ class Manager {
 		}
 
 		return $provider->getAuthorizeUri();
-
-		SentrySocial::getAuthorizeUri('facebook', 'http://my.app/callback');
 	}
 
-	public function retrieveToken($provider)
+	public function authenticate($slug, Closure $callback = null, $remember = false)
 	{
-		if (is_string($provider))
+		// If a callback was supplied, we'll treat it as
+		// a global authenticating callback. Specific
+		// callbacks for registering and existing
+		// users can be registered outside of
+		// this method.
+		if ($callback) $this->authenticating($callback);
+
+		$provider = $this->make($slug, $callbackUri);
+		$token    = $this->retrieveToken($provider);
+
+		$link = $this->link($slug, $provider);
+		$user = $link->getUser();
+
+		$this->login($user, $remember);
+
+		return $user;
+	}
+
+	protected function link($slug, $provider, $token)
+	{
+		$link = $this->linkProvider->findLink($slug, $provider);
+		$link->storeToken($token);
+
+		if ( ! $user = $link->getUser())
 		{
-			$provider = $this->make($provider, $callbackUri);
+			$userProvider = $this->sentry->getUserProvider();
+			$login        = $provider->getUserEmail() ?: $provider->getUserUid();
+
+			try
+			{
+				$user = $userProvider->findByLogin($login);
+				$link->setUser($user);
+
+				$this->fireEvent('existing', $link, $provider, $token, $slug);
+			}
+			catch (UserNotFoundException $e)
+			{
+				$emptyUser = $userProvider->getEmptyUser();
+
+				// Create a dummy password for the user
+				$passwordParams = array($serviceName, $uid, $login, time(), mt_rand());
+				shuffle($passwordParams);
+
+				// Setup an array of attributes we'll add onto
+				// so we can create our user.
+				$attributes = array(
+					$emptyUser->getLoginName()    => $login,
+					$emptyUser->getPasswordName() => implode('', $passwordParams),
+				);
+
+				// Some providers give a first / last name, some don't.
+				// If we only have one name, we'll just put it in the
+				// "first_name" attribute.
+				if (is_array($name = $service->getUserName()))
+				{
+					$attributes['first_name'] = $name[0];
+					$attributes['last_name']  = $name[1];
+				}
+				elseif (is_string($name))
+				{
+					$attributes['first_name'] = $name;
+				}
+
+				$user = $userProvider->create($attributes);
+				$user->attemptActivation($user->getActivationCode());
+
+				$link->setUser($user);
+
+				$this->fireEvent('registering', $link, $provider, $token, $slug);
+			}
 		}
 
-		$token = $this->retrieveToken($provider);
+		$this->fireEvent('authenticating', $link, $provider, $token, $slug);
+
+		return $link;
 	}
 
-	public function authenticate($provider, Closure $callback, $remember = false)
+	protected function login(UserInterface $user, $remember)
 	{
-		$token = $this->retrieveToken($provider);
+		$throttleProvider = $this->sentry->getThrottleProvider();
 
-		$uid = $provider->getUserUid($token);
-
-		$link = $this->linkProvider->findLink(
-			get_class($provider),
-			$uid
-		);
-
-		// Fire a callback to modify the user
-		$callback($user, $provider, $token);
-
-		return;
-
-		SentrySocial::authenticate('facebook', function($user, $provider, $token)
+		// Now, we'll check throttling to ensure we're
+		// not logging in a user which shouldn't be allowed.
+		if ($throttleProvider->isEnabled())
 		{
+			$throttle = $throttleProvider->findByUserId(
+				$user->getId(),
+				$this->sentry->getIpAddress()
+			);
 
-		});
+			$throttle->check();
+		}
+
+		$this->sentry->login($user, $remember);
 	}
 
 	protected function retrieveToken($provider)
@@ -163,6 +248,17 @@ class Manager {
 		}
 
 		return $this->connections[$slug];
+	}
+
+	/**
+	 * Set the event dispatcher.
+	 *
+	 * @param  Illuminate\Events\Dispatcher
+	 * @return void
+	 */
+	public function setDispatcher(Dispacher $dispatcher)
+	{
+		$this->dispatcher = $dispatcher;
 	}
 
 	protected function createProvider($connection, $callbackUri = null)
@@ -282,6 +378,20 @@ class Manager {
 		);
 
 		return new $driver($options);
+	}
+
+	/**
+	 * Fires an event for Sentry Social.
+	 *
+	 * @param  string  $name
+	 * @param  Cartalyst\Sentry\Users\UserInterface  $user
+	 * @return mixed
+	 */
+	protected function fireEvent($name, LinkInterface $link, $provider, $token, $slug)
+	{
+		if ( ! isset($this->dispatcher)) return;
+
+		return $this->dispatcher->fire("sentry.social.{$name}", array($link, $provider, $token, $slug));
 	}
 
 }
