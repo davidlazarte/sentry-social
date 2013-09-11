@@ -18,12 +18,16 @@
  * @link       http://cartalyst.com
  */
 
+use Cartalyst\Sentry\RequestProviders\ProviderInterface as RequestProviderInterface;
 use Cartalyst\Sentry\Sessions\SessionInterface;
 use Cartalyst\Sentry\Sentry;
+use Closure;
 
 class Manager {
 
 	protected $sentry;
+
+	protected $requestProvider;
 
 	protected $session;
 
@@ -31,9 +35,12 @@ class Manager {
 
 	protected $connections = array();
 
-	public function __construct(Sentry $sentry, SessionInterface $session = null, LinkProviderInterface $linkProvider = null)
+	public function __construct(Sentry $sentry, RequestProviderInterface $requestProvider = null, SessionInterface $session = null, LinkProviderInterface $linkProvider = null)
 	{
-
+		$this->sentry = $sentry;
+		$this->requestProvider = $requestProvider;
+		$this->session = $session;
+		$this->linkProvider = $linkProvider;
 	}
 
 	public function make($slug, $callbackUri = null)
@@ -41,6 +48,98 @@ class Manager {
 		$connection = $this->getConnection($slug);
 
 		return $this->createProvider($connection, $callbackUri);
+	}
+
+	public function getAuthorizeUri($provider, $callbackUri = null)
+	{
+		if (is_string($provider))
+		{
+			$provider = $this->make($provider, $callbackUri);
+		}
+
+		// OAuth 1 is a three-legged authentication process
+		// and thus we need to grab temporary credentials
+		// first.
+		if ($this->determineOAuthType($provider) == 1)
+		{
+			$temporaryCredentials = $provider->getTemporaryCredentials();
+
+			$this->session->put($temporaryCredentials);
+
+			return $provider->getAuthorizeUri($temporaryCredentials);
+		}
+
+		return $provider->getAuthorizeUri();
+
+		SentrySocial::getAuthorizeUri('facebook', 'http://my.app/callback');
+	}
+
+	public function retrieveToken($provider)
+	{
+		if (is_string($provider))
+		{
+			$provider = $this->make($provider, $callbackUri);
+		}
+
+		$token = $this->retrieveToken($provider);
+	}
+
+	public function authenticate($provider, Closure $callback, $remember = false)
+	{
+		$token = $this->retrieveToken($provider);
+
+		$uid = $provider->getUserUid($token);
+
+		$link = $this->linkProvider->findLink(
+			get_class($provider),
+			$uid
+		);
+
+		// Fire a callback to modify the user
+		$callback($user, $provider, $token);
+
+		return;
+
+		SentrySocial::authenticate('facebook', function($user, $provider, $token)
+		{
+
+		});
+	}
+
+	protected function retrieveToken($provider)
+	{
+		if ($this->determineOAuthType($provider) == 1)
+		{
+			$temporaryIdentifier = $this->requestProvider->getOAuth1TemporaryIdentifier();
+			$verifier = $this->requestProvider->getOAuth1Verifier();
+
+			if ( ! $temporaryIdentifier)
+			{
+				throw new \AccessMissingException('Missing [oauth_token] parameter (used for OAuth1 temporary credentials identifier).');
+			}
+
+			if ( ! $verifier)
+			{
+				throw new \AccessMissingException('Missing [verifier] parameter.');
+			}
+
+			$temporaryCredentials = $this->session->get();
+
+			$tokenCredentials = $provider->getTokenCredentials($temporaryCredentials, $temporaryIdentifier, $verifier);
+
+			return $tokenCredentials;
+		}
+
+		$code = $this->requestProvider->getOAuth2Code();
+
+		if ( ! $code)
+		{
+			throw new \AccessMissingException("Missing [code] parameter.");
+		}
+
+		$accessToken = $provider->getAccessToken('authorization_code', compact('code'));
+
+		return $accessToken;
 	}
 
 	public function addConnection($slug, array $connection)
@@ -93,39 +192,55 @@ class Manager {
 		}
 	}
 
-	protected function determineOAuthType($driver)
+	protected function determineOAuthType($provider)
 	{
-		// Built-in OAuth1 server
-		if (class_exists('League\\OAuth1\\Client\\Server\\'.$driver))
+		// Determined based on class name
+		if (is_string($provider))
+		{
+			// Built-in OAuth1 server
+			if (class_exists('League\\OAuth1\\Client\\Server\\'.$provider))
+			{
+				return 1;
+			}
+
+			// Built-in OAuth2 provider
+			if (class_exists('League\\OAuth2\\Client\\Provider\\'.$provider))
+			{
+				return 2;
+			}
+
+			// If the driver is a custom class which doesn't exist
+			if ( ! class_exists($provider))
+			{
+				throw new \RuntimeException("Failed to determine OAuth type as [$provider] does not exist.");
+			}
+
+			$parent = $this->getHighestParent($provider);
+
+			if ($parent == 'League\\OAuth1\\Client\\Server\\Server')
+			{
+				return 1;
+			}
+
+			if ($parent == 'League\\OAuth2\\Client\\Provider\\IdentityProvider')
+			{
+				return 2;
+			}
+
+			throw new \RuntimeException("[$provider] does not inherit from a compatible OAuth provider class.");
+		}
+
+		if ($provider instanceof League\OAuth1\Client\Server\Server)
 		{
 			return 1;
 		}
 
-		// Built-in OAuth2 provider
-		if (class_exists('League\\OAuth2\\Client\\Provider\\'.$driver))
+		if ($provider instanceof League\OAuth2\Client\Provider\IdentityProvider)
 		{
 			return 2;
 		}
 
-		// If the driver is a custom class which doesn't exist
-		if ( ! class_exists($driver))
-		{
-			throw new \RuntimeException("Failed to determine OAuth class [$driver] does not exist.");
-		}
-
-		$parent = $this->getHighestParent($driver);
-
-		if ($parent == 'League\\OAuth1\\Client\\Server\\Server')
-		{
-			return 1;
-		}
-
-		if ($parent == 'League\\OAuth2\\Client\\Provider\\IdentityProvider')
-		{
-			return 2;
-		}
-
-		throw new \RuntimeException("Driver [$driver] does not inherit from a compatible OAuth provider class.");
+		throw new \RuntimeException('['.get_class($provider).'] does not inherit from a compatible OAuth provider class.');
 	}
 
 	protected function getHighestParent($driver)
