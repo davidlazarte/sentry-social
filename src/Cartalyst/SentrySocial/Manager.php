@@ -139,7 +139,7 @@ class Manager {
 		// OAuth 1 is a three-legged authentication process
 		// and thus we need to grab temporary credentials
 		// first.
-		if ($this->determineOAuthType($provider) == 1)
+		if ($this->oauthVersion($provider) == 1)
 		{
 			$temporaryCredentials = $provider->getTemporaryCredentials();
 
@@ -320,7 +320,7 @@ class Manager {
 	 */
 	protected function retrieveToken($provider)
 	{
-		if ($this->determineOAuthType($provider) == 1)
+		if ($this->oauthVersion($provider) == 1)
 		{
 			$temporaryIdentifier = $this->requestProvider->getOAuth1TemporaryIdentifier();
 			$verifier = $this->requestProvider->getOAuth1Verifier();
@@ -432,14 +432,14 @@ class Manager {
 
 		$this->validateConnection($slug, $connection);
 
-		$oauthType = $this->determineOAuthType($connection['driver']);
+		list($oauthVersion, $driver) = $this->determineOAuth($connection['driver']);
 
-		if ($oauthType == 1)
+		if ($oauthVersion == 1)
 		{
-			return $this->createOAuth1Provider($connection, $callbackUri);
+			return $this->createOAuth1Provider($driver, $connection, $callbackUri);
 		}
 
-		return $this->createOAuth2Provider($connection, $callbackUri);
+		return $this->createOAuth2Provider($driver, $connection, $callbackUri);
 	}
 
 	/**
@@ -464,52 +464,14 @@ class Manager {
 	}
 
 	/**
-	 * Determines the OAuth type of the given provider. The
-	 * provider may be a driver name (string) or a provider
-	 * instance.
+	 * Determines the OAuth version of the given provider.
 	 *
 	 * @param  mixed  $provider
 	 * @return int
 	 * @throws \RuntimeException
 	 */
-	protected function determineOAuthType($provider)
+	protected function oauthVersion($provider)
 	{
-		// Determined based on class name
-		if (is_string($provider))
-		{
-			// Built-in OAuth1 server
-			if (class_exists('League\\OAuth1\\Client\\Server\\'.$provider))
-			{
-				return 1;
-			}
-
-			// Built-in OAuth2 provider
-			if (class_exists('League\\OAuth2\\Client\\Provider\\'.$provider))
-			{
-				return 2;
-			}
-
-			// If the driver is a custom class which doesn't exist
-			if ( ! class_exists($provider))
-			{
-				throw new \RuntimeException("Failed to determine OAuth type as [$provider] does not exist.");
-			}
-
-			$parent = $this->getHighestParent($provider);
-
-			if ($parent == 'League\\OAuth1\\Client\\Server\\Server')
-			{
-				return 1;
-			}
-
-			if ($parent == 'League\\OAuth2\\Client\\Provider\\IdentityProvider')
-			{
-				return 2;
-			}
-
-			throw new \RuntimeException("[$provider] does not inherit from a compatible OAuth provider class.");
-		}
-
 		if ($provider instanceof League\OAuth1\Client\Server\Server)
 		{
 			return 1;
@@ -521,6 +483,52 @@ class Manager {
 		}
 
 		throw new \RuntimeException('['.get_class($provider).'] does not inherit from a compatible OAuth provider class.');
+	}
+
+	/**
+	 * Determines the OAuth version and class name for a driver
+	 * with the given name. Allows for built-in and custom
+	 * drivers. An array is returned, where the first
+	 * value is the version and the second is the
+	 * class name to instantiate.
+	 *
+	 * @param  mixed  $driver
+	 * @return array
+	 * @throws \RuntimeException
+	 */
+	protected function determineOAuth($driver)
+	{
+		// Built-in OAuth1 server
+		if (class_exists($class = 'League\\OAuth1\\Client\\Server\\'.$driver))
+		{
+			return array(1, $class);
+		}
+
+		// Built-in OAuth2 provider
+		if (class_exists($class = 'League\\OAuth2\\Client\\Provider\\'.$driver))
+		{
+			return array(2, $class);
+		}
+
+		// If the driver is a custom class which doesn't exist
+		if ( ! class_exists($driver))
+		{
+			throw new \RuntimeException("Failed to determine OAuth type as [$driver] does not exist.");
+		}
+
+		$parent = $this->getHighestParent($driver);
+
+		if ($parent == 'League\\OAuth1\\Client\\Server\\Server')
+		{
+			return array(1, $driver);
+		}
+
+		if ($parent == 'League\\OAuth2\\Client\\Provider\\IdentityProvider')
+		{
+			return array(2, $driver);
+		}
+
+		throw new \RuntimeException("[$driver] does not inherit from a compatible OAuth provider class.");
 	}
 
 	/**
@@ -548,14 +556,13 @@ class Manager {
 	 * Creates an OAuth1 provider from a connection with an optional
 	 * callback URI.
 	 *
+	 * @param  string $driver
 	 * @param  array  $connection
 	 * @param  string $callbackUri
 	 * @return \League\OAuth1\Client\Server\Server
 	 */
-	protected function createOAuth1Provider($connection, $callbackUri = null)
+	protected function createOAuth1Provider($driver, $connection, $callbackUri = null)
 	{
-		$driver = $connection['driver'];
-
 		$credentials = array(
 			'identifier'   => $connection['identifier'],
 			'secret'       => $connection['secret'],
@@ -569,14 +576,13 @@ class Manager {
 	 * Creates an OAuth2 provider from a connection with an optional
 	 * callback URI.
 	 *
+	 * @param  string $driver
 	 * @param  array  $connection
 	 * @param  string $callbackUri
 	 * @return \League\OAuth2\Client\Provider\IdentityProvider
 	 */
-	protected function createOAuth2Provider($connection, $callbackUri = null)
+	protected function createOAuth2Provider($driver, $connection, $callbackUri = null)
 	{
-		$driver = $connection['driver'];
-
 		$options = array(
 			'clientId'     => $connection['identifier'],
 			'clientSecret' => $connection['secret'],
