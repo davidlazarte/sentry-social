@@ -19,14 +19,19 @@
  */
 
 use Cartalyst\SentrySocial\Links\Eloquent\Provider as LinkProvider;
+use Cartalyst\SentrySocial\Links\LinkInterface as LinkInterface;
 use Cartalyst\SentrySocial\Links\ProviderInterface as LinkProviderInterface;
 use Cartalyst\SentrySocial\RequestProviders\NativeProvider as NativeRequestProvider;
 use Cartalyst\SentrySocial\RequestProviders\ProviderInterface as RequestProviderInterface;
 use Cartalyst\Sentry\Sessions\NativeSession;
 use Cartalyst\Sentry\Sessions\SessionInterface;
 use Cartalyst\Sentry\Sentry;
+use Cartalyst\Sentry\Users\UserInterface;
+use Cartalyst\Sentry\Users\UserNotFoundException;
 use Closure;
 use Illuminate\Events\Dispatcher;
+use League\OAuth1\Client\Server\Server as OAuth1Provider;
+use League\OAuth2\Client\Provider\IdentityProvider as OAuth2Provider;
 
 class Manager {
 
@@ -169,10 +174,10 @@ class Manager {
 		// registered outside of this method.
 		if ($callback) $this->linking($callback);
 
-		$provider = $this->make($slug, $callbackUri);
+		$provider = $this->make($slug);
 		$token    = $this->retrieveToken($provider);
 
-		$link = $this->link($slug, $provider);
+		$link = $this->link($slug, $provider, $token);
 		$user = $link->getUser();
 
 		$this->login($user, $remember);
@@ -278,8 +283,12 @@ class Manager {
 				$this->fireEvent('registering', $link, $provider, $token, $slug);
 			}
 		}
+		else
+		{
+			$this->fireEvent('existing', $link, $provider, $token, $slug);
+		}
 
-		$this->fireEvent('authenticating', $link, $provider, $token, $slug);
+		$this->fireEvent('linking', $link, $provider, $token, $slug);
 
 		return $link;
 	}
@@ -323,16 +332,17 @@ class Manager {
 		if ($this->oauthVersion($provider) == 1)
 		{
 			$temporaryIdentifier = $this->requestProvider->getOAuth1TemporaryIdentifier();
-			$verifier = $this->requestProvider->getOAuth1Verifier();
 
 			if ( ! $temporaryIdentifier)
 			{
-				throw new \AccessMissingException('Missing [oauth_token] parameter (used for OAuth1 temporary credentials identifier).');
+				throw new AccessMissingException('Missing [oauth_token] parameter (used for OAuth1 temporary credentials identifier).');
 			}
+
+			$verifier = $this->requestProvider->getOAuth1Verifier();
 
 			if ( ! $verifier)
 			{
-				throw new \AccessMissingException('Missing [verifier] parameter.');
+				throw new AccessMissingException('Missing [verifier] parameter.');
 			}
 
 			$temporaryCredentials = $this->session->get();
@@ -346,7 +356,7 @@ class Manager {
 
 		if ( ! $code)
 		{
-			throw new \AccessMissingException("Missing [code] parameter.");
+			throw new AccessMissingException("Missing [code] parameter.");
 		}
 
 		$accessToken = $provider->getAccessToken('authorization_code', compact('code'));
@@ -472,12 +482,12 @@ class Manager {
 	 */
 	protected function oauthVersion($provider)
 	{
-		if ($provider instanceof League\OAuth1\Client\Server\Server)
+		if ($provider instanceof OAuth1Provider)
 		{
 			return 1;
 		}
 
-		if ($provider instanceof League\OAuth2\Client\Provider\IdentityProvider)
+		if ($provider instanceof OAuth2Provider)
 		{
 			return 2;
 		}
@@ -542,6 +552,12 @@ class Manager {
 	{
 		// Find out what interfaces the driver implements
 		$childClass = new \ReflectionClass($childName);
+
+		// We'll reference the child name as the default
+		// parent name just incase somebody passes through
+		// an object which doesn't extend anything, this'll
+		// help them get a decent error message.
+		$parentName = $childName;
 
 		while ($parentClass = $childClass->getParentClass())
 		{
@@ -614,7 +630,10 @@ class Manager {
 	 * Fires an event for Sentry Social.
 	 *
 	 * @param  string  $name
-	 * @param  Cartalyst\Sentry\Users\UserInterface  $user
+	 * @param  \Cartalyst\SentrySocial\Links\LinkInterface  $link
+	 * @param  mixed   $provider
+	 * @param  mixed   $token
+	 * @param  string  $slug
 	 * @return mixed
 	 */
 	protected function fireEvent($name, LinkInterface $link, $provider, $token, $slug)
