@@ -386,7 +386,7 @@ class Manager {
 	{
 		foreach ($connections as $slug => $connection)
 		{
-			$this->addConnection($connection);
+			$this->addConnection($slug, $connection);
 		}
 	}
 

@@ -18,8 +18,9 @@
  * @link       http://cartalyst.com
  */
 
-use Cartalyst\SentrySocial\SocialLinks\Eloquent\Provider as SocialLinkProvider;
-use Cartalyst\SentrySocial\Services\ServiceFactory;
+use Cartalyst\SentrySocial\Links\Eloquent\Provider as LinkProvider;
+use Cartalyst\SentrySocial\RequestProviders\IlluminateProvider as RequestProvider;
+use Cartalyst\Sentry\Sessions\IlluminateSession;
 
 class SentrySocialServiceProvider extends \Illuminate\Support\ServiceProvider {
 
@@ -40,33 +41,40 @@ class SentrySocialServiceProvider extends \Illuminate\Support\ServiceProvider {
 	 */
 	public function register()
 	{
-		$this->registerServiceFactory();
+		$this->registerLinkProvider();
 
-		$this->registerSocialLinkProvider();
+		$this->registerRequestProvider();
+
+		$this->registerSession();
 
 		$this->registerSentrySocial();
 	}
 
-	/**
-	 * Registers the OAuth service factory.
-	 *
-	 * @return void
-	 */
-	protected function registerServiceFactory()
-	{
-		$this->app['sentry.social.factory'] = $this->app->share(function($app)
-		{
-			return new ServiceFactory;
-		});
-	}
-
-	protected function registerSocialLinkProvider()
+	protected function registerLinkProvider()
 	{
 		$this->app['sentry.social.link'] = $this->app->share(function($app)
 		{
 			$model = $app['config']['cartalyst/sentry-social::link'];
 
-			return new SocialLinkProvider($model);
+			return new LinkProvider($model);
+		});
+	}
+
+	protected function registerRequestProvider()
+	{
+		$this->app['sentry.social.request'] = $this->app->share(function($app)
+		{
+			return new RequestProvider($app['request']);
+		});
+	}
+
+	protected function registerSession()
+	{
+		$this->app['sentry.social.session'] = $this->app->share(function($app)
+		{
+			$key = $app['config']['cartalyst/sentry::cookie.key'].'_social';
+
+			return new IlluminateSession($app['session'], $key);
 		});
 	}
 
@@ -79,15 +87,17 @@ class SentrySocialServiceProvider extends \Illuminate\Support\ServiceProvider {
 	{
 		$this->app['sentry.social'] = $this->app->share(function($app)
 		{
-			$connections = $app['config']['cartalyst/sentry-social::connections'];
-
-			return new Manager(
+			$manager = new Manager(
 				$app['sentry'],
 				$app['sentry.social.link'],
-				$app['sentry.social.factory'],
-				$connections,
+				$app['sentry.social.request'],
+				$app['sentry.social.session'],
 				$app['events']
 			);
+
+			$connections = $app['config']['cartalyst/sentry-social::connections'];
+
+			$manager->addConnections($connections);
 		});
 	}
 
