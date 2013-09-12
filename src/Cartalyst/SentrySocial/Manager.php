@@ -252,7 +252,7 @@ class Manager {
 				$emptyUser = $userProvider->getEmptyUser();
 
 				// Create a dummy password for the user
-				$passwordParams = array($serviceName, $uid, $login, time(), mt_rand());
+				$passwordParams = array($slug, $login, time(), mt_rand());
 				shuffle($passwordParams);
 
 				// Setup an array of attributes we'll add onto
@@ -265,7 +265,7 @@ class Manager {
 				// Some providers give a first / last name, some don't.
 				// If we only have one name, we'll just put it in the
 				// "first_name" attribute.
-				if (is_array($name = $service->getUserName()))
+				if (is_array($name = $provider->getUserScreenName()))
 				{
 					$attributes['first_name'] = $name[0];
 					$attributes['last_name']  = $name[1];

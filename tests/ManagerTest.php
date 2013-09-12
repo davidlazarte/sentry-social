@@ -263,7 +263,7 @@ class ManagerTest extends PHPUnit_Framework_TestCase {
 		$user = $manager->authenticate('foo');
 	}
 
-	public function testAuthenticatingOAuth1WithExistingUser()
+	public function testAuthenticatingOAuth1WithLinkedUser()
 	{
 		$manager = m::mock('Cartalyst\SentrySocial\Manager[make]');
 		$manager->__construct($this->sentry, $this->linkProvider, $this->requestProvider, $this->session, $this->dispatcher);
@@ -328,6 +328,179 @@ class ManagerTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('sentry.social.linking', $_name);
 	}
 
+	public function testAuthenticatingOAuth1WithUnlinkedExistingUser()
+	{
+		$manager = m::mock('Cartalyst\SentrySocial\Manager[make]');
+		$manager->__construct($this->sentry, $this->linkProvider, $this->requestProvider, $this->session, $this->dispatcher);
+
+		$manager->shouldReceive('make')->with('foo')->once()->andReturn($provider = m::mock('League\OAuth1\Client\Server\Server'));
+
+		// Request proxy
+		$this->requestProvider->shouldReceive('getOAuth1TemporaryIdentifier')->once()->andReturn('identifier');
+		$this->requestProvider->shouldReceive('getOAuth1Verifier')->once()->andReturn('verifier');
+
+		// Mock retrieving credentials from the underlying package
+		$this->session->shouldReceive('get')->andReturn($temporaryCredentials = m::mock('League\OAuth1\Client\Credentials\TemporaryCredentials'));
+		$provider->shouldReceive('getTokenCredentials')->with($temporaryCredentials, 'identifier', 'verifier')->once()->andReturn($tokenCredentials = m::mock('League\OAuth1\Client\Credentials\TokenCredentials'));
+
+		// Finding an appropriate link
+		$this->linkProvider->shouldReceive('findLink')->with('foo', $provider)->once()->andReturn($link = m::mock('Cartalyst\SentrySocial\Links\LinkInterface'));
+		$link->shouldReceive('storeToken')->with($tokenCredentials)->once();
+
+		// Retrieving a user from the link
+		$link->shouldReceive('getUser')->ordered()->once()->andReturn(null);
+
+		// Retrieving an existing user
+		$this->sentry->shouldReceive('getUserProvider')->once()->andReturn($userProvider = m::mock('Cartalyst\Sentry\Users\ProviderInterface'));
+		$provider->shouldReceive('getUserEmail')->once()->andReturn('a@b.c');
+		$userProvider->shouldReceive('findByLogin')->with('a@b.c')->once()->andReturn($user = m::mock('Cartalyst\Sentry\Users\UserInterface'));
+		$user->shouldReceive('getId')->once()->andReturn(123);
+		$link->shouldReceive('setUser')->with($user)->once();
+		$link->shouldReceive('getUser')->ordered()->once()->andReturn($user);
+
+		// Sentry's jobs
+		$this->sentry->shouldReceive('getThrottleProvider')->once()->andReturn($throttleProvider = m::mock('Cartalyst\Sentry\Throtting\ThrottleProvider'));
+		$this->sentry->shouldReceive('getIpAddress')->once()->andReturn('127.0.0.1');
+
+		// Checking throttle status
+		$throttleProvider->shouldReceive('isEnabled')->once()->andReturn(true);
+		$throttleProvider->shouldReceive('findByUserId')->with(123, '127.0.0.1')->once()->andReturn($throttle = m::mock('Cartalyst\Sentry\Throtting\ThrottleInterface'));
+		$throttle->shouldReceive('check')->once();
+
+		// And finally, logging a user in
+		$this->sentry->shouldReceive('login')->with($user, true)->once();
+
+		$me = $this;
+		$manager->existing(function($link, $provider, $token, $slug, $name) use ($me)
+		{
+			// Check the name of the event
+			$me->assertEquals('sentry.social.existing', $name);
+
+			$_SERVER['__sentry_social_existing'] = true;
+		});
+
+		$user = $manager->authenticate('foo', function()
+		{
+			$_SERVER['__sentry_social_linking'] = func_get_args();
+		}, true);
+
+		$this->assertTrue(isset($_SERVER['__sentry_social_existing']));
+		unset($_SERVER['__sentry_social_existing']);
+
+		$this->assertTrue(isset($_SERVER['__sentry_social_linking']));
+		$eventArgs = $_SERVER['__sentry_social_linking'];
+		unset($_SERVER['__sentry_social_linking']);
+
+		$this->assertCount(5, $eventArgs);
+		list($_link, $_provider, $_tokenCredentials, $_slug, $_name) = $eventArgs;
+		$this->assertEquals($link, $_link);
+		$this->assertEquals($provider, $_provider);
+		$this->assertEquals($tokenCredentials, $_tokenCredentials);
+		$this->assertEquals('foo', $_slug);
+		$this->assertEquals('sentry.social.linking', $_name);
+	}
+
+	public function testAuthenticatingOAuth1WithUnlinkedNonExistentUser()
+	{
+		$manager = m::mock('Cartalyst\SentrySocial\Manager[make]');
+		$manager->__construct($this->sentry, $this->linkProvider, $this->requestProvider, $this->session, $this->dispatcher);
+
+		$manager->shouldReceive('make')->with('foo')->once()->andReturn($provider = m::mock('League\OAuth1\Client\Server\Server'));
+
+		// Request proxy
+		$this->requestProvider->shouldReceive('getOAuth1TemporaryIdentifier')->once()->andReturn('identifier');
+		$this->requestProvider->shouldReceive('getOAuth1Verifier')->once()->andReturn('verifier');
+
+		// Mock retrieving credentials from the underlying package
+		$this->session->shouldReceive('get')->andReturn($temporaryCredentials = m::mock('League\OAuth1\Client\Credentials\TemporaryCredentials'));
+		$provider->shouldReceive('getTokenCredentials')->with($temporaryCredentials, 'identifier', 'verifier')->once()->andReturn($tokenCredentials = m::mock('League\OAuth1\Client\Credentials\TokenCredentials'));
+
+		// Finding an appropriate link
+		$this->linkProvider->shouldReceive('findLink')->with('foo', $provider)->once()->andReturn($link = m::mock('Cartalyst\SentrySocial\Links\LinkInterface'));
+		$link->shouldReceive('storeToken')->with($tokenCredentials)->once();
+
+		// Retrieving a user from the link
+		$link->shouldReceive('getUser')->ordered()->once()->andReturn(null);
+
+		// Retrieving an existing user
+		$this->sentry->shouldReceive('getUserProvider')->once()->andReturn($userProvider = m::mock('Cartalyst\Sentry\Users\ProviderInterface'));
+		$provider->shouldReceive('getUserEmail')->once()->andReturn('a@b.c');
+		$userProvider->shouldReceive('findByLogin')->with('a@b.c')->once()->andThrow(new \Cartalyst\Sentry\Users\UserNotFoundException);
+
+		// Determining user attributes
+		$userProvider->shouldReceive('getEmptyUser')->once()->andReturn($emptyUser = m::mock('Cartalyst\Sentry\Users\UserInterface'));
+		$emptyUser->shouldReceive('getLoginName')->once()->andReturn('login');
+		$emptyUser->shouldReceive('getPasswordName')->once()->andReturn('password');
+		$provider->shouldReceive('getUserScreenName')->once()->andReturn(array('Ben', 'Corlett'));
+
+		// Create a user
+		$me = $this;
+		$userProvider->shouldReceive('create')->with(m::on(function($attributes) use ($me)
+		{
+			foreach (array('login', 'password', 'first_name', 'last_name') as $key)
+			{
+				$me->assertTrue(isset($attributes[$key]));
+			}
+
+			$me->assertEquals('a@b.c', $attributes['login']);
+			$me->assertEquals('Ben', $attributes['first_name']);
+			$me->assertEquals('Corlett', $attributes['last_name']);
+
+			// Keep mockery happy
+			return true;
+		}))->once()->andReturn($user = m::mock('Cartalyst\Sentry\Users\UserInterface'));
+
+		// Activate the user
+		$user->shouldReceive('getActivationCode')->once()->andReturn('activation_code');
+		$user->shouldReceive('attemptActivation')->with('activation_code')->once();
+
+		// And back on track
+		$user->shouldReceive('getId')->once()->andReturn(123);
+		$link->shouldReceive('setUser')->with($user)->once();
+		$link->shouldReceive('getUser')->ordered()->once()->andReturn($user);
+
+		// Sentry's jobs
+		$this->sentry->shouldReceive('getThrottleProvider')->once()->andReturn($throttleProvider = m::mock('Cartalyst\Sentry\Throtting\ThrottleProvider'));
+		$this->sentry->shouldReceive('getIpAddress')->once()->andReturn('127.0.0.1');
+
+		// Checking throttle status
+		$throttleProvider->shouldReceive('isEnabled')->once()->andReturn(true);
+		$throttleProvider->shouldReceive('findByUserId')->with(123, '127.0.0.1')->once()->andReturn($throttle = m::mock('Cartalyst\Sentry\Throtting\ThrottleInterface'));
+		$throttle->shouldReceive('check')->once();
+
+		// And finally, logging a user in
+		$this->sentry->shouldReceive('login')->with($user, true)->once();
+
+		$me = $this;
+		$manager->registering(function($link, $provider, $token, $slug, $name) use ($me)
+		{
+			// Check the name of the event
+			$me->assertEquals('sentry.social.registering', $name);
+
+			$_SERVER['__sentry_social_registering'] = true;
+		});
+
+		$user = $manager->authenticate('foo', function()
+		{
+			$_SERVER['__sentry_social_linking'] = func_get_args();
+		}, true);
+
+		$this->assertTrue(isset($_SERVER['__sentry_social_registering']));
+		unset($_SERVER['__sentry_social_registering']);
+
+		$this->assertTrue(isset($_SERVER['__sentry_social_linking']));
+		$eventArgs = $_SERVER['__sentry_social_linking'];
+		unset($_SERVER['__sentry_social_linking']);
+
+		$this->assertCount(5, $eventArgs);
+		list($_link, $_provider, $_tokenCredentials, $_slug, $_name) = $eventArgs;
+		$this->assertEquals($link, $_link);
+		$this->assertEquals($provider, $_provider);
+		$this->assertEquals($tokenCredentials, $_tokenCredentials);
+		$this->assertEquals('foo', $_slug);
+		$this->assertEquals('sentry.social.linking', $_name);
+	}
+
 	/**
 	 * @expectedException Cartalyst\SentrySocial\AccessMissingException
 	 * @expectedExceptionMessage Missing [code] parameter
@@ -344,7 +517,7 @@ class ManagerTest extends PHPUnit_Framework_TestCase {
 		$user = $manager->authenticate('foo');
 	}
 
-	public function testAuthenticatingOAuth2WithExistingUser()
+	public function testAuthenticatingOAuth2WithLinkedUser()
 	{
 		$manager = m::mock('Cartalyst\SentrySocial\Manager[make]');
 		$manager->__construct($this->sentry, $this->linkProvider, $this->requestProvider, $this->session, $this->dispatcher);
@@ -393,6 +566,175 @@ class ManagerTest extends PHPUnit_Framework_TestCase {
 
 		$this->assertTrue(isset($_SERVER['__sentry_social_existing']));
 		unset($_SERVER['__sentry_social_existing']);
+
+		$this->assertTrue(isset($_SERVER['__sentry_social_linking']));
+		$eventArgs = $_SERVER['__sentry_social_linking'];
+		unset($_SERVER['__sentry_social_linking']);
+
+		$this->assertCount(5, $eventArgs);
+		list($_link, $_provider, $_accessToken, $_slug, $_name) = $eventArgs;
+		$this->assertEquals($link, $_link);
+		$this->assertEquals($provider, $_provider);
+		$this->assertEquals($accessToken, $_accessToken);
+		$this->assertEquals('foo', $_slug);
+		$this->assertEquals('sentry.social.linking', $_name);
+	}
+
+	public function testAuthenticatingOAuth2WithUnlinkedExistingUser()
+	{
+		$manager = m::mock('Cartalyst\SentrySocial\Manager[make]');
+		$manager->__construct($this->sentry, $this->linkProvider, $this->requestProvider, $this->session, $this->dispatcher);
+
+		$manager->shouldReceive('make')->with('foo')->once()->andReturn($provider = m::mock('League\OAuth2\Client\Provider\IdentityProvider'));
+
+		// Request proxy
+		$this->requestProvider->shouldReceive('getOAuth2Code')->once()->andReturn('code');
+
+		// Mock retrieving credentials from the underlying package
+		$provider->shouldReceive('getAccessToken')->with('authorization_code', array('code' => 'code'))->once()->andReturn($accessToken = m::mock('League\OAuth2\Client\Token\AccessToken'));
+
+		// Finding an appropriate link
+		$this->linkProvider->shouldReceive('findLink')->with('foo', $provider)->once()->andReturn($link = m::mock('Cartalyst\SentrySocial\Links\LinkInterface'));
+		$link->shouldReceive('storeToken')->with($accessToken)->once();
+
+		// Retrieving a user from the link
+		$link->shouldReceive('getUser')->ordered()->once()->andReturn(null);
+
+		// Retrieving an existing user
+		$this->sentry->shouldReceive('getUserProvider')->once()->andReturn($userProvider = m::mock('Cartalyst\Sentry\Users\ProviderInterface'));
+		$provider->shouldReceive('getUserEmail')->once()->andReturn('a@b.c');
+		$userProvider->shouldReceive('findByLogin')->with('a@b.c')->once()->andReturn($user = m::mock('Cartalyst\Sentry\Users\UserInterface'));
+		$user->shouldReceive('getId')->once()->andReturn(123);
+		$link->shouldReceive('setUser')->with($user)->once();
+		$link->shouldReceive('getUser')->ordered()->once()->andReturn($user);
+
+		// Sentry's jobs
+		$this->sentry->shouldReceive('getThrottleProvider')->once()->andReturn($throttleProvider = m::mock('Cartalyst\Sentry\Throtting\ThrottleProvider'));
+		$this->sentry->shouldReceive('getIpAddress')->once()->andReturn('127.0.0.1');
+
+		// Checking throttle status
+		$throttleProvider->shouldReceive('isEnabled')->once()->andReturn(true);
+		$throttleProvider->shouldReceive('findByUserId')->with(123, '127.0.0.1')->once()->andReturn($throttle = m::mock('Cartalyst\Sentry\Throtting\ThrottleInterface'));
+		$throttle->shouldReceive('check')->once();
+
+		// And finally, logging a user in
+		$this->sentry->shouldReceive('login')->with($user, true)->once();
+
+		$me = $this;
+		$manager->existing(function($link, $provider, $token, $slug, $name) use ($me)
+		{
+			// Check the name of the event
+			$me->assertEquals('sentry.social.existing', $name);
+
+			$_SERVER['__sentry_social_existing'] = true;
+		});
+
+		$user = $manager->authenticate('foo', function()
+		{
+			$_SERVER['__sentry_social_linking'] = func_get_args();
+		}, true);
+
+		$this->assertTrue(isset($_SERVER['__sentry_social_existing']));
+		unset($_SERVER['__sentry_social_existing']);
+
+		$this->assertTrue(isset($_SERVER['__sentry_social_linking']));
+		$eventArgs = $_SERVER['__sentry_social_linking'];
+		unset($_SERVER['__sentry_social_linking']);
+
+		$this->assertCount(5, $eventArgs);
+		list($_link, $_provider, $_accessToken, $_slug, $_name) = $eventArgs;
+		$this->assertEquals($link, $_link);
+		$this->assertEquals($provider, $_provider);
+		$this->assertEquals($accessToken, $_accessToken);
+		$this->assertEquals('foo', $_slug);
+		$this->assertEquals('sentry.social.linking', $_name);
+	}
+
+	public function testAuthenticatingOAuth2WithUnlinkedNonExistentUser()
+	{
+		$manager = m::mock('Cartalyst\SentrySocial\Manager[make]');
+		$manager->__construct($this->sentry, $this->linkProvider, $this->requestProvider, $this->session, $this->dispatcher);
+
+		$manager->shouldReceive('make')->with('foo')->once()->andReturn($provider = m::mock('League\OAuth2\Client\Provider\IdentityProvider'));
+
+		// Request proxy
+		$this->requestProvider->shouldReceive('getOAuth2Code')->once()->andReturn('code');
+
+		// Mock retrieving credentials from the underlying package
+		$provider->shouldReceive('getAccessToken')->with('authorization_code', array('code' => 'code'))->once()->andReturn($accessToken = m::mock('League\OAuth2\Client\Token\AccessToken'));
+
+		// Finding an appropriate link
+		$this->linkProvider->shouldReceive('findLink')->with('foo', $provider)->once()->andReturn($link = m::mock('Cartalyst\SentrySocial\Links\LinkInterface'));
+		$link->shouldReceive('storeToken')->with($accessToken)->once();
+
+		// Retrieving a user from the link
+		$link->shouldReceive('getUser')->ordered()->once()->andReturn(null);
+
+		// Retrieving an existing user
+		$this->sentry->shouldReceive('getUserProvider')->once()->andReturn($userProvider = m::mock('Cartalyst\Sentry\Users\ProviderInterface'));
+		$provider->shouldReceive('getUserEmail')->once()->andReturn('a@b.c');
+		$userProvider->shouldReceive('findByLogin')->with('a@b.c')->once()->andThrow(new \Cartalyst\Sentry\Users\UserNotFoundException);
+
+		// Determining user attributes
+		$userProvider->shouldReceive('getEmptyUser')->once()->andReturn($emptyUser = m::mock('Cartalyst\Sentry\Users\UserInterface'));
+		$emptyUser->shouldReceive('getLoginName')->once()->andReturn('login');
+		$emptyUser->shouldReceive('getPasswordName')->once()->andReturn('password');
+		$provider->shouldReceive('getUserScreenName')->once()->andReturn(array('Ben', 'Corlett'));
+
+		// Create a user
+		$me = $this;
+		$userProvider->shouldReceive('create')->with(m::on(function($attributes) use ($me)
+		{
+			foreach (array('login', 'password', 'first_name', 'last_name') as $key)
+			{
+				$me->assertTrue(isset($attributes[$key]));
+			}
+
+			$me->assertEquals('a@b.c', $attributes['login']);
+			$me->assertEquals('Ben', $attributes['first_name']);
+			$me->assertEquals('Corlett', $attributes['last_name']);
+
+			// Keep mockery happy
+			return true;
+		}))->once()->andReturn($user = m::mock('Cartalyst\Sentry\Users\UserInterface'));
+
+		// Activate the user
+		$user->shouldReceive('getActivationCode')->once()->andReturn('activation_code');
+		$user->shouldReceive('attemptActivation')->with('activation_code')->once();
+
+		// And back on track
+		$user->shouldReceive('getId')->once()->andReturn(123);
+		$link->shouldReceive('setUser')->with($user)->once();
+		$link->shouldReceive('getUser')->ordered()->once()->andReturn($user);
+
+		// Sentry's jobs
+		$this->sentry->shouldReceive('getThrottleProvider')->once()->andReturn($throttleProvider = m::mock('Cartalyst\Sentry\Throtting\ThrottleProvider'));
+		$this->sentry->shouldReceive('getIpAddress')->once()->andReturn('127.0.0.1');
+
+		// Checking throttle status
+		$throttleProvider->shouldReceive('isEnabled')->once()->andReturn(true);
+		$throttleProvider->shouldReceive('findByUserId')->with(123, '127.0.0.1')->once()->andReturn($throttle = m::mock('Cartalyst\Sentry\Throtting\ThrottleInterface'));
+		$throttle->shouldReceive('check')->once();
+
+		// And finally, logging a user in
+		$this->sentry->shouldReceive('login')->with($user, true)->once();
+
+		$me = $this;
+		$manager->registering(function($link, $provider, $token, $slug, $name) use ($me)
+		{
+			// Check the name of the event
+			$me->assertEquals('sentry.social.registering', $name);
+
+			$_SERVER['__sentry_social_registering'] = true;
+		});
+
+		$user = $manager->authenticate('foo', function()
+		{
+			$_SERVER['__sentry_social_linking'] = func_get_args();
+		}, true);
+
+		$this->assertTrue(isset($_SERVER['__sentry_social_registering']));
+		unset($_SERVER['__sentry_social_registering']);
 
 		$this->assertTrue(isset($_SERVER['__sentry_social_linking']));
 		$eventArgs = $_SERVER['__sentry_social_linking'];
