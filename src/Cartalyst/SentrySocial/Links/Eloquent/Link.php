@@ -1,4 +1,4 @@
-<?php namespace Cartalyst\SentrySocial\SocialLinks\Eloquent;
+<?php namespace Cartalyst\SentrySocial\Links\Eloquent;
 /**
  * Part of the Sentry Social package.
  *
@@ -22,7 +22,7 @@ use Cartalyst\Sentry\Users\UserInterface;
 use Cartalyst\SentrySocial\SocialLinks\LinkInterface;
 use Illuminate\Database\Eloquent\Model;
 
-class SocialLink extends Model implements LinkInterface {
+class Link extends Model implements LinkInterface {
 
 	/**
 	 * The table associated with the model.
@@ -37,6 +37,16 @@ class SocialLink extends Model implements LinkInterface {
 	 * @var array
 	 */
 	protected $guarded = array();
+
+	/**
+	 * Store a token with the link.
+	 *
+	 * @param  mixed  $token
+	 * @return void
+	 */
+	public function storeToken($token)
+	{
+	}
 
 	/**
 	 * Returns the relationship to the user that this
@@ -69,16 +79,6 @@ class SocialLink extends Model implements LinkInterface {
 	{
 		$this->user_id = $user->getId();
 		$this->save();
-	}
-
-	public function setExtraParamsAttribute(array $extraParams)
-	{
-		$this->attributes['extra_params'] = json_encode($extraParams);
-	}
-
-	public function getExtraParamsAttribute($extraParams)
-	{
-		return json_decode($extraParams, true);
 	}
 
 }

@@ -28,14 +28,14 @@
 		"php": ">=5.3.3",
 
 		"cartalyst/sentry": "2.0.*",
-
 		"league/oauth1-client": "1.0.*",
 		"league/oauth2-client": "dev-master"
 	},
 	"require-dev": {
 		"mockery/mockery": "0.7.2",
 
-		"illuminate/database": "4.0.*"
+		"illuminate/database": "4.0.*",
+		"illuminate/http": "~4.0"
 	},
 	"autoload": {
 		"classmap": [

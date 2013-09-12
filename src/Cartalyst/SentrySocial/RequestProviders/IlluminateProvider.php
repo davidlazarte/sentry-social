@@ -20,7 +20,7 @@
 
 use Illuminate\Http\Request;
 
-class NativeProvider implements ProviderInterface {
+class IlluminateProvider implements ProviderInterface {
 
 	/**
 	 * The request instance.

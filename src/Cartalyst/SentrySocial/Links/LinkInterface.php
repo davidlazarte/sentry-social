@@ -1,4 +1,4 @@
-<?php namespace Cartalyst\SentrySocial\SocialLinks;
+<?php namespace Cartalyst\SentrySocial\Links;
 /**
  * Part of the Sentry Social package.
  *
@@ -23,16 +23,24 @@ use Cartalyst\Sentry\Users\UserInterface;
 interface LinkInterface {
 
 	/**
+	 * Store a token with the link.
+	 *
+	 * @param  mixed  $token
+	 * @return void
+	 */
+	public function storeToken($token);
+
+	/**
 	 * Get the user associated with the social link.
 	 *
-	 * @return Cartalyst\Sentry\Users\UserInterface  $user
+	 * @return \Cartalyst\Sentry\Users\UserInterface  $user
 	 */
 	public function getUser();
 
 	/**
 	 * Set the user associated with the social link.
 	 *
-	 * @param  Cartalyst\Sentry\Users\UserInterface  $user
+	 * @param  \Cartalyst\Sentry\Users\UserInterface  $user
 	 * @return void
 	 */
 	public function setUser(UserInterface $user);

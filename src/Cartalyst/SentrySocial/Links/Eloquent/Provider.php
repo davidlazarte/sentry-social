@@ -1,4 +1,4 @@
-<?php namespace Cartalyst\SentrySocial\SocialLinks\Eloquent;
+<?php namespace Cartalyst\SentrySocial\Links\Eloquent;
 /**
  * Part of the Sentry Social package.
  *
@@ -48,32 +48,31 @@ class Provider implements ProviderInterface {
 	}
 
 	/**
-	 * Finds the a social link object by the service name
-	 * and user's unique identifier.
+	 * Finds a link (or creates one) for the given
+	 * provider slug and provider instance.
 	 *
-	 * @param  string  $serviceName
-	 * @param  string  $userUniqueIdentifier
-	 * @return Cartalyst\SentrSocial\SocialLinks\LinkInterface
+	 * @param  string  $slug
+	 * @param  mixed   $provider
+	 * @return \Cartalyst\SentrySocial\Links\LinkInterface
 	 */
-	public function findLink(ServiceInterface $service)
+	public function findLink($slug, $provider)
 	{
-		$serviceName = $service->getServiceName();
-		$uid         = $service->getUserUniqueIdentifier();
+		$uid = $provider->getUserUid();
 
 		$query = $this
 			->createModel()
 			->newQuery()
-			->where('service', '=', $serviceName)
+			->where('provider', '=', $slug)
 			->where('uid', '=', $uid);
 
 		if ( ! $link = $query->first())
 		{
 			$link = $this->createModel();
-			$link->service = $serviceName;
-			$link->uid     = $uid;
+			$link->provider = $slug;
+			$link->uid      = $uid;
 		}
 
-		$this->storeToken($service, $link);
+		$link->save();
 
 		return $link;
 	}
@@ -88,29 +87,6 @@ class Provider implements ProviderInterface {
 		$class = '\\'.ltrim($this->model, '\\');
 
 		return new $class;
-	}
-
-	protected function storeToken(ServiceInterface $service, LinkInterface $link)
-	{
-		// Hacky, I know.
-		$token = $service
-		    ->getStorage()
-		    ->retrieveAccessToken(preg_replace('/^.*\\\\/', '', get_class($service)));
-
-		$link->access_token = $token->getAccessToken();
-		$link->end_of_life  = $token->getEndOfLife();
-		$link->extra_params = $token->getExtraParams();
-
-		if ($token instanceof OAuth1TokenInterface)
-		{
-			$link->access_token_secret = $token->getAccessTokenSecret();
-			$link->request_token = $token->getRequestToken();
-			$link->request_token_secret = $token->getRequestTokenSecret();
-		}
-		else
-		{
-			$link->refresh_token = $token->getRefreshToken();
-		}
 	}
 
 }
