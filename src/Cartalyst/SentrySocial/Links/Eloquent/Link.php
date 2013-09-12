@@ -19,8 +19,10 @@
  */
 
 use Cartalyst\Sentry\Users\UserInterface;
-use Cartalyst\SentrySocial\SocialLinks\LinkInterface;
+use Cartalyst\SentrySocial\Links\LinkInterface;
 use Illuminate\Database\Eloquent\Model;
+use League\OAuth1\Client\Credentials\TokenCredentials as OAuth1TokenCredentials;
+use League\OAuth2\Client\Token\AccessToken as OAuth2AccessToken;
 
 class Link extends Model implements LinkInterface {
 
@@ -46,6 +48,23 @@ class Link extends Model implements LinkInterface {
 	 */
 	public function storeToken($token)
 	{
+		if ($token instanceof OAuth1TokenCredentials)
+		{
+			$this->oauth1_token_identifier = $token->getIdentifier();
+			$this->oauth1_token_secret     = $token->getSecret();
+		}
+		elseif ($token instanceof OAuth2AccessToken)
+		{
+			$this->oauth2_access_token  = $token->accessToken;
+			$this->oauth2_expires       = $token->expires;
+			$this->oauth2_refresh_token = $token->refreshToken;
+		}
+		else
+		{
+			throw new \InvalidArgumentException('Invalid token type ['.gettype($token).'] passed to be stored.');
+		}
+
+		$this->save();
 	}
 
 	/**
@@ -79,6 +98,16 @@ class Link extends Model implements LinkInterface {
 	{
 		$this->user_id = $user->getId();
 		$this->save();
+	}
+
+	/**
+	 * Get the attributes that should be converted to dates.
+	 *
+	 * @return array
+	 */
+	public function getDates()
+	{
+		return array_merge(parent::getDates(), array('oauth2_expires'));
 	}
 
 }

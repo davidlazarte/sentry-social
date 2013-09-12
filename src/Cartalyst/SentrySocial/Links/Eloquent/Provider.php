@@ -19,10 +19,9 @@
  */
 
 use Cartalyst\SentrySocial\Services\ServiceInterface;
-use Cartalyst\SentrySocial\SocialLinks\LinkInterface;
-use Cartalyst\SentrySocial\SocialLinks\ProviderInterface;
-use OAuth\OAuth1\Token\TokenInterface as OAuth1TokenInterface;
-use OAuth\Oauth2\Token\TokenInterface as OAuth2TokenInterface;
+use Cartalyst\SentrySocial\Links\ProviderInterface;
+use League\OAuth1\Client\Server\Server as OAuth1Server;
+use League\OAuth2\Client\Provider\IdentityProvider as IdentityProvider;
 
 class Provider implements ProviderInterface {
 
@@ -31,7 +30,7 @@ class Provider implements ProviderInterface {
 	 *
 	 * @var string
 	 */
-	protected $model = 'Cartalyst\SentrySocial\SocialLinks\Eloquent\SocialLink';
+	protected $model = 'Cartalyst\SentrySocial\Links\Eloquent\Link';
 
 	/**
 	 * Create a new Eloquent Social Link provider.
@@ -57,6 +56,11 @@ class Provider implements ProviderInterface {
 	 */
 	public function findLink($slug, $provider)
 	{
+		if ( ! $provider instanceof OAuth1Server and ! $provider instanceof OAuth2Provider)
+		{
+			throw new \InvalidArgumentException('Invalid provider instance provided.');
+		}
+
 		$uid = $provider->getUserUid();
 
 		$query = $this
@@ -68,11 +72,12 @@ class Provider implements ProviderInterface {
 		if ( ! $link = $query->first())
 		{
 			$link = $this->createModel();
-			$link->provider = $slug;
-			$link->uid      = $uid;
+			$link->fill(array(
+				'provider' => $slug,
+				'uid'      => $uid,
+			));
+			$link->save();
 		}
-
-		$link->save();
 
 		return $link;
 	}
