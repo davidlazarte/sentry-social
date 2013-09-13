@@ -48,21 +48,14 @@ class Provider implements ProviderInterface {
 
 	/**
 	 * Finds a link (or creates one) for the given
-	 * provider slug and provider instance.
+	 * provider slug and uid.
 	 *
 	 * @param  string  $slug
-	 * @param  mixed   $provider
+	 * @param  mixed   $uid
 	 * @return \Cartalyst\SentrySocial\Links\LinkInterface
 	 */
-	public function findLink($slug, $provider)
+	public function findLink($slug, $uid)
 	{
-		if ( ! $provider instanceof OAuth1Server and ! $provider instanceof OAuth2Provider)
-		{
-			throw new \InvalidArgumentException('Invalid provider instance provided.');
-		}
-
-		$uid = $provider->getUserUid();
-
 		$query = $this
 			->createModel()
 			->newQuery()

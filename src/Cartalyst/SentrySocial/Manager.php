@@ -232,13 +232,15 @@ class Manager {
 	 */
 	protected function link($slug, $provider, $token)
 	{
-		$link = $this->linkProvider->findLink($slug, $provider);
+		$uid = $provider->userUid($token);
+
+		$link = $this->linkProvider->findLink($slug, $uid);
 		$link->storeToken($token);
 
 		if ( ! $user = $link->getUser())
 		{
 			$userProvider = $this->sentry->getUserProvider();
-			$login        = $provider->getUserEmail() ?: $provider->getUserUid();
+			$login        = $provider->getUserEmail() ?: $uid;
 
 			try
 			{
