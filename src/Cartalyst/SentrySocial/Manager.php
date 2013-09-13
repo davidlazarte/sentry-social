@@ -232,7 +232,7 @@ class Manager {
 	 */
 	protected function link($slug, $provider, $token)
 	{
-		$uid = $provider->userUid($token);
+		$uid = $provider->getUserUid($token);
 
 		$link = $this->linkProvider->findLink($slug, $uid);
 		$link->storeToken($token);
@@ -240,7 +240,7 @@ class Manager {
 		if ( ! $user = $link->getUser())
 		{
 			$userProvider = $this->sentry->getUserProvider();
-			$login        = $provider->getUserEmail() ?: $uid;
+			$login        = $provider->getUserEmail($token) ?: $provider->getUserScreenName($token).'@'.$uid;
 
 			try
 			{
@@ -267,7 +267,7 @@ class Manager {
 				// Some providers give a first / last name, some don't.
 				// If we only have one name, we'll just put it in the
 				// "first_name" attribute.
-				if (is_array($name = $provider->getUserScreenName()))
+				if (is_array($name = $provider->getUserScreenName($token)))
 				{
 					$attributes['first_name'] = $name[0];
 					$attributes['last_name']  = $name[1];
