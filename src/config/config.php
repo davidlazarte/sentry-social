@@ -118,6 +118,6 @@ return array(
 	|
 	*/
 
-	'link' => 'Cartalyst\SentrySocial\SocialLinks\Eloquent\SocialLink',
+	'link' => 'Cartalyst\SentrySocial\Links\Eloquent\Link',
 
 );
