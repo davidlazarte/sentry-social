@@ -98,6 +98,8 @@ class SentrySocialServiceProvider extends \Illuminate\Support\ServiceProvider {
 			$connections = $app['config']['cartalyst/sentry-social::connections'];
 
 			$manager->addConnections($connections);
+
+			return $manager;
 		});
 	}
 

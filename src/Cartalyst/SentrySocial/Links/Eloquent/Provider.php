@@ -21,7 +21,7 @@
 use Cartalyst\SentrySocial\Services\ServiceInterface;
 use Cartalyst\SentrySocial\Links\ProviderInterface;
 use League\OAuth1\Client\Server\Server as OAuth1Server;
-use League\OAuth2\Client\Provider\IdentityProvider as IdentityProvider;
+use League\OAuth2\Client\Provider\IdentityProvider as OAuth2Provider;
 
 class Provider implements ProviderInterface {
 
