@@ -116,7 +116,7 @@ class Manager {
 	 * @param  string  $callbackUri
 	 * @return mixed
 	 */
-	public function make($slug, $callbackUri = null)
+	public function make($slug, $callbackUri)
 	{
 		if ( ! isset($this->providers[$slug]))
 		{
@@ -135,7 +135,7 @@ class Manager {
 	 * @param  string  $callbackUri
 	 * @return string
 	 */
-	public function getAuthorizationUrl($slug, $callbackUri = null)
+	public function getAuthorizationUrl($slug, $callbackUri)
 	{
 		$provider = $this->make($slug, $callbackUri);
 
@@ -165,7 +165,7 @@ class Manager {
 	 * @param  bool    $remmber
 	 * @return \Cartalyst\Sentry\Users\UserInterface
 	 */
-	public function authenticate($slug, $callbackUri = null, Closure $callback = null, $remember = false)
+	public function authenticate($slug, $callbackUri, Closure $callback = null, $remember = false)
 	{
 		// If a callback is supplied, we'll treat it as a global linking
 		// callback. Specific callbacks for registering and existing
@@ -436,7 +436,7 @@ class Manager {
 	 * @param  string  $callbackUri
 	 * @return mixed
 	 */
-	protected function createProvider($slug, $callbackUri = null)
+	protected function createProvider($slug, $callbackUri)
 	{
 		$connection = $this->getConnection($slug);
 
@@ -574,7 +574,7 @@ class Manager {
 	 * @param  string $callbackUri
 	 * @return \League\OAuth1\Client\Server\Server
 	 */
-	protected function createOAuth1Provider($driver, $connection, $callbackUri = null)
+	protected function createOAuth1Provider($driver, $connection, $callbackUri)
 	{
 		$credentials = array(
 			'identifier'   => $connection['identifier'],
@@ -594,7 +594,7 @@ class Manager {
 	 * @param  string $callbackUri
 	 * @return \League\OAuth2\Client\Provider\IdentityProvider
 	 */
-	protected function createOAuth2Provider($driver, $connection, $callbackUri = null)
+	protected function createOAuth2Provider($driver, $connection, $callbackUri)
 	{
 		$options = array(
 			'clientId'     => $connection['identifier'],
