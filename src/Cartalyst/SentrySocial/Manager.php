@@ -23,9 +23,9 @@ use Cartalyst\SentrySocial\Links\LinkInterface as LinkInterface;
 use Cartalyst\SentrySocial\Links\ProviderInterface as LinkProviderInterface;
 use Cartalyst\SentrySocial\RequestProviders\NativeProvider as NativeRequestProvider;
 use Cartalyst\SentrySocial\RequestProviders\ProviderInterface as RequestProviderInterface;
+use Cartalyst\Sentry\Sentry;
 use Cartalyst\Sentry\Sessions\NativeSession;
 use Cartalyst\Sentry\Sessions\SessionInterface;
-use Cartalyst\Sentry\Sentry;
 use Cartalyst\Sentry\Users\UserInterface;
 use Cartalyst\Sentry\Users\UserNotFoundException;
 use Closure;
@@ -38,7 +38,7 @@ class Manager {
 	/**
 	 * The shared Sentry instance.
 	 *
-	 * @var \Cartalyst\Sentry\Sentyr
+	 * @var \Cartalyst\Sentry\Sentry
 	 */
 	protected $sentry;
 
@@ -72,8 +72,7 @@ class Manager {
 	protected $dispatcher;
 
 	/**
-	 * Array of connectiosn (credentials for
-	 * creating provider instances).
+	 * Array of connections (credentials for creating provider instances).
 	 *
 	 * @var array
 	 */
@@ -110,9 +109,8 @@ class Manager {
 	}
 
 	/**
-	 * Make a provider with the given connection slug
-	 * and an optional callback URI. Instances of
-	 * providers are cached.
+	 * Create a provider with the given connection slug and with the
+	 * optional callback URI. Instances of providers are cached.
 	 *
 	 * @param  string  $slug
 	 * @param  string  $callbackUri
@@ -168,10 +166,9 @@ class Manager {
 	 */
 	public function authenticate($slug, Closure $callback = null, $remember = false)
 	{
-		// If a callback was supplied, we'll treat it as
-		// a global linking callback. Specific callbacks
-		// for registering and existing users can be
-		// registered outside of this method.
+		// If a callback is supplied, we'll treat it as a global linking
+		// callback. Specific callbacks for registering and existing
+		// users can be registered outside of this method.
 		if ($callback) $this->linking($callback);
 
 		$provider = $this->make($slug);
@@ -306,7 +303,7 @@ class Manager {
 	{
 		$throttleProvider = $this->sentry->getThrottleProvider();
 
-		// Now, we'll check throttling to ensure we're
+		// Now, we will check the throttling to ensure we are
 		// not logging in a user which shouldn't be allowed.
 		if ($throttleProvider->isEnabled())
 		{
@@ -328,6 +325,7 @@ class Manager {
 	 *
 	 * @param  mixed  $provider
 	 * @return mixed
+	 * @throws \Cartalyst\SentrySocial\AccessMissingException
 	 */
 	protected function retrieveToken($provider)
 	{
@@ -410,8 +408,7 @@ class Manager {
 	}
 
 	/**
-	 * Get all connections associated with the
-	 * manager.
+	 * Get all connections associated with the manager.
 	 *
 	 * @return array
 	 */
@@ -498,11 +495,10 @@ class Manager {
 	}
 
 	/**
-	 * Determines the OAuth version and class name for a driver
-	 * with the given name. Allows for built-in and custom
-	 * drivers. An array is returned, where the first
-	 * value is the version and the second is the
-	 * class name to instantiate.
+	 * Determines the OAuth version and class name for a driver with the
+	 * given name. Allows for built-in and custom drivers. An array is
+	 * returned, where the first value is the version and the second
+	 * is the class name to instantiate.
 	 *
 	 * @param  mixed  $driver
 	 * @return array
@@ -544,8 +540,7 @@ class Manager {
 	}
 
 	/**
-	 * Retrieves the highest parent class name for
-	 * the given child class name.
+	 * Retrieves the highest parent class name for the given child class name.
 	 *
 	 * @param  string  $childName
 	 * @return string  $parentName
@@ -555,10 +550,9 @@ class Manager {
 		// Find out what interfaces the driver implements
 		$childClass = new \ReflectionClass($childName);
 
-		// We'll reference the child name as the default
-		// parent name just incase somebody passes through
-		// an object which doesn't extend anything, this'll
-		// help them get a decent error message.
+		// We'll reference the child name as the default parent name just
+		// incase somebody passes through an object which doesn't extend
+		// anything, this'll help them get a decent error message.
 		$parentName = $childName;
 
 		while ($parentClass = $childClass->getParentClass())
@@ -617,6 +611,7 @@ class Manager {
 	 * @param  string   $name
 	 * @param  \Closure $callback
 	 * @return void
+	 * @throws \RuntimeException
 	 */
 	protected function registerEvent($name, Closure $callback)
 	{

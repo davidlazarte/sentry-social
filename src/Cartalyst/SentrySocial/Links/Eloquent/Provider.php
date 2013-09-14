@@ -11,7 +11,7 @@
  * the following URL: http://www.opensource.org/licenses/BSD-3-Clause
  *
  * @package    Sentry
- * @version    2.0.0
+ * @version    3.0.0
  * @author     Cartalyst LLC
  * @license    BSD License (3-clause)
  * @copyright  (c) 2011 - 2013, Cartalyst LLC
@@ -47,28 +47,26 @@ class Provider implements ProviderInterface {
 	}
 
 	/**
-	 * Finds a link (or creates one) for the given
-	 * provider slug and uid.
+	 * Finds a link (or creates one) for the given provider slug and uid.
 	 *
-	 * @param  string  $slug
+	 * @param  string  $provider
 	 * @param  mixed   $uid
 	 * @return \Cartalyst\SentrySocial\Links\LinkInterface
 	 */
-	public function findLink($slug, $uid)
+	public function findLink($provider, $uid)
 	{
 		$query = $this
 			->createModel()
 			->newQuery()
-			->where('provider', '=', $slug)
+			->where('provider', '=', $provider)
 			->where('uid', '=', $uid);
 
 		if ( ! $link = $query->first())
 		{
 			$link = $this->createModel();
-			$link->fill(array(
-				'provider' => $slug,
-				'uid'      => $uid,
-			));
+
+			$link->fill(compact('provider', 'uid'));
+
 			$link->save();
 		}
 

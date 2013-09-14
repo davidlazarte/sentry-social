@@ -11,7 +11,7 @@
  * the following URL: http://www.opensource.org/licenses/BSD-3-Clause
  *
  * @package    Sentry
- * @version    2.0.0
+ * @version    3.0.0
  * @author     Cartalyst LLC
  * @license    BSD License (3-clause)
  * @copyright  (c) 2011 - 2013, Cartalyst LLC
@@ -45,6 +45,7 @@ class Link extends Model implements LinkInterface {
 	 *
 	 * @param  mixed  $token
 	 * @return void
+	 * @throws \InvalidArgumentException
 	 */
 	public function storeToken($token)
 	{
@@ -97,6 +98,7 @@ class Link extends Model implements LinkInterface {
 	public function setUser(UserInterface $user)
 	{
 		$this->user_id = $user->getId();
+
 		$this->save();
 	}
 
