@@ -59,6 +59,16 @@ return array(
 			'scopes'     => array('user'),
 		),
 
+		'google' => array(
+			'driver'     => 'Google',
+			'identifier' => '',
+			'secret'     => '',
+			'scopes'     => array(
+				'https://www.googleapis.com/auth/userinfo.profile',
+				'https://www.googleapis.com/auth/userinfo.email',
+			),
+		),
+
 		'twitter' => array(
 			'driver'     => 'Twitter',
 			'identifier' => '',
@@ -106,13 +116,6 @@ return array(
 		// 	'identifier' => '',
 		// 	'secret'     => '',
 		// 	'scopes'     => array(),
-		// ),
-
-		// 'google' => array(
-		// 	'driver'     => 'Google',
-		// 	'identifier' => '',
-		// 	'secret'     => '',
-		// 	'scopes'     => array('userinfo_profile', 'userinfo_email'),
 		// ),
 
 		// 'microsoft' => array(
