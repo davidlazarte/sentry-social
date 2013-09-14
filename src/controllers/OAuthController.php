@@ -11,7 +11,7 @@
  * the following URL: http://www.opensource.org/licenses/BSD-3-Clause
  *
  * @package    Sentry
- * @version    2.0.0
+ * @version    3.0.0
  * @author     Cartalyst LLC
  * @license    BSD License (3-clause)
  * @copyright  (c) 2011 - 2013, Cartalyst LLC
@@ -23,10 +23,10 @@ use Config;
 use Exception;
 use Illuminate\Routing\Controllers\Controller;
 use Input;
-use URL;
 use Redirect;
 use Sentry;
 use SentrySocial;
+use URL;
 use View;
 
 class OAuthController extends Controller {
@@ -40,7 +40,7 @@ class OAuthController extends Controller {
 	{
 		$connections = array_filter(SentrySocial::getConnections(), function($connection)
 		{
-			return ($connection->getKey() and $connection->getSecret());
+			return ($connection['identifier'] and $connection['secret']);
 		});
 
 		return View::make('cartalyst/sentry-social::oauth/index', compact('connections'));
@@ -49,59 +49,32 @@ class OAuthController extends Controller {
 	/**
 	 * Shows a link to authenticate a service.
 	 *
-	 * @param  string  $serviceName
+	 * @param  string  $slug
 	 * @return string
 	 */
-	public function getAuthorize($serviceName)
+	public function getAuthorize($slug)
 	{
-		$service = SentrySocial::make($serviceName, URL::to("oauth/callback/{$serviceName}"));
+		$url = SentrySocial::getAuthorizationUrl($slug, URL::to("oauth/callback/{$slug}"));
 
-		return Redirect::to((string) $service->getAuthorizationUri());
+		return Redirect::to($url);
 	}
 
 	/**
 	 * Handles authentication
 	 *
-	 * @param  string  $serviceName
+	 * @param  string  $slug
 	 * @return mixed
 	 */
-	public function getCallback($serviceName)
+	public function getCallback($slug)
 	{
-		$service = SentrySocial::make($serviceName, URL::to("oauth/callback/{$serviceName}"));
-
-		// If there is an error passed back from the OAuth service
-		if ($error = Input::get('error'))
-		{
-			throw new Exception($error);
-		}
-
-		// If the user has denied access for the OAuth application
-		if (Input::get('denied'))
-		{
-			throw new Exception("You have denied [$serviceName] access.");
-		}
-
-		// If we have an access code from an OAuth 2 service
-		elseif ($code = Input::get('code'))
-		{
-			$access = $code;
-		}
-
-		// If we have request token and verifier from an OAuth 1 service
-		elseif ($requestToken = Input::get('oauth_token'))
-		{
-			$access = array($requestToken, Input::get('oauth_verifier'));
-		}
-
-		// Otherwise, we'll abort now
-		else App::abort(404);
-
 		try
 		{
-			if (SentrySocial::authenticate($service, $access))
+			$user = SentrySocial::authenticate($slug, URL::current(), function($link, $provider, $token, $slug)
 			{
-				return Redirect::to('oauth/authenticated');
-			}
+				// Callback after user is linked
+			});
+
+			return Redirect::to('oauth/authenticated');
 		}
 		catch (Exception $e)
 		{
