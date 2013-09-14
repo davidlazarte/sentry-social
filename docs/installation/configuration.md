@@ -15,11 +15,20 @@ For each connection you wish to use, you will need to add your application's `ke
 
 #### Everywhere Else
 
-> **Note:** We are working towards easier integration with other frameworks in the future with Sentry Social 2, namely FuelPHP and CodeIgniter.
+> **Note:** We are working towards easier integration with other frameworks in the future with Sentry Social 3, namely FuelPHP and CodeIgniter.
 
-Once you have installed and initialized an instance of `Cartalyst\SentrySocial\Manager`, simple call:
+Once you have installed and initialized an instance of `Cartalyst\SentrySocial\Manager`, you need to only call:
 
-	$manager->register('name', array(
-		'key' => 'application_key_here',
-		'secret' => 'application_secret_here',
+	$manager->addConnection('slug', array(
+		'driver'     => 'Facebook',
+		'identifier' => 'your_app_identifier',
+		'secret'     => 'your_app_secret',
+		'scopes'     => array(), // OAuth2 only
 	));
+
+When you add a connection, you must provide a unique `slug` (which is used when authenticating). You'll also need to pass through an associative array of properties:
+
+1. `driver` - this is the class name of a valid built-in OAuth driver, or a classname of your own custom driver which inherits from a valid base class.
+2. `identifier` - this is your application's identifier (also known as an "id" or "key").
+3. `secret` - this is your application's secret.
+4. `scopes` - with OAuth2 providers, you may provide an optional array of scopes (scopes represent how much data you're requesting).

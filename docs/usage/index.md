@@ -4,48 +4,123 @@ Using Sentry Social is easy. Once you have configured it, you simply need to cal
 
 For the examples, we'll use the Laravel Facade, however the same methods may be called on a `$sentrySocial` variable, non-statically.
 
-#### Making a Service
+#### OAuth Flow
 
-Making a service is very easy:
+While OAuth1 and OAuth2 are incompatible protocols, they (for the most part) follow the same process:
 
-	// Make the "facebook" service
-	$service = SentrySocial::make('facebook', 'http://url-which-you-would-like-to/redirect-do');
+1. A secure connection is established between a your app and a provider.
+2. A user is redirected to the provider where they may login and approve (or reject) your app to have access.
+3. Your app receives a token from the service so your app may act on behalf of the person who authenticated. You never find out their password and they have the option to revoke your access at any point.
 
-#### Using a Service
+Sentry Social 3 abstracts all the differences between OAuth 1 and OAuth 2, so that you can focus on the more interesting parts of your app.
 
-Once you have made a service, you need to redirect the user to the "authorization URI". This is the URI where they will login to their service (e.g. Facebook) and it will ask for permission to access their basic data.
+#### Authorizing
 
-	$service = SentrySocial::make('facebook', 'http://url-which-you-would-like-to/redirect-do');
+Authorizing a user (redirecting them to the provider's login/approval screen) is extremely easy.
 
-	// Let's redirect the user to authorize with Facebook
-	return Redirect::to((string) $service->getAuthorizationUri());
+Once you've configured a provider with Sentry Social, you simply need to redirect the user to the authorization URL.
 
-#### Authenticating the User
+In Laravel, this would be:
 
-Once the user has authorized your application, they'll get redirected to the URL which you specified when you made the service, in this case `http://url-which-you-would-like-to/redirect-do`. We then want to use the `code` which has been passed back as `$_GET` parameter and authenticate the user. This is the magic which ties the service login with a Sentry login. It will create non-existent users and link existing ones. A user may be linked to multiple services as well:
-
-	$service = SentrySocial::make('facebook', 'http://url-which-you-would-like-to/redirect-do');
-
-	if ($code = Input::get('code'))
+	Route::get('oauth/authorize', function()
 	{
-		if ($user = SentrySocial::authenticate($service, $code))
+		$callback = URL::to('oauth/callback');
+		$url = SentrySocial::getAuthorizationUrl('facebook', $callback);
+		return Redirect::to($url);
+	});
+
+Outside Laravel, this would be:
+
+	// In authorize.php
+
+	$callback = 'http://app.dev/callback.php';
+	$url = $manager->getAuthorizationUrl('facebook', $callback);
+	header('Location: '.$url);
+	exit;
+
+#### Authenticating a user
+
+Once a user has finished authorizing (or rejecting) your application, they're redirected to the callback URL which you specified.
+
+To handle the authentication process, you will need to respond to the response from the provider on that callback URL.
+
+In Laravel, this would be:
+
+	Route::get('oauth/callback', function()
+	{
+		try
 		{
-			var_dump($user);
-
-			// Additionally, the user will be logged in, so this
-			// is the same:
-			// var_dump(Sentry::getUser());
-
-			// Continue with your application's workflow, the user is logged in!
+			$user = SentrySocial::authenticate('facebook', function(Cartalyst\SentrySocial\Links\LinkInterface $link, $provider, $token, $slug)
+			{
+				$user = $link->getUser(); // Modify the user in question
+				// You could add your custom data
+				$data = $provider->getUserDetails($token);
+				
+				$user->foo = $data['foo'];
+				$user->save();
+			});
 		}
+		catch (Cartalyst\SentrySocial\AccessMissingException $e)
+		{
+			// Missing OAuth parameters were missing from the query string.
+			// Either the person rejected the app, or the URL has been manually
+			// accesed.
+			if ($error = Input::get('error'))
+			{
+				return Redirect::to('oauth')->withErrors($error);
+			}
+			
+			App::abort(404);
+		}
+	});
+
+Outside Laravel, this would be:
+
+	// In callback.php
+	try
+	{
+		$user = $manager->authenticate('facebook', function(Cartalyst\SentrySocial\Links\LinkInterface $link, $provider, $token, $slug)
+		{
+			$user = $link->getUser(); // Modify the user in question
+			// You could add your custom data
+			$data = $provider->getUserDetails($token);
+			
+			$user->foo = $data['foo'];
+			$user->save();
+		});
+	}
+	catch (Cartalyst\SentrySocial\AccessMissingException $e)
+	{
+		// Missing OAuth parameters were missing from the query string.
+		// Either the person rejected the app, or the URL has been manually
+		// accesed.
+		if ($error = Input::get('error'))
+		{
+			var_dump($error); // You may save this to the session, redirect somewhere
+			die();
+			return Redirect::to('oauth')->withErrors($error);
+		}
+		
+		header('HTTP/1.0 404 Not Found');
 	}
 
-#### Laravel 4
+#### Hooks
 
-In Laravel 4, we've added a controller which handles the registration flow for you. Feel free to use it, extend it or replace it, but it should get you started on your way to authenticating using Sentry Social.
+In addition to providing a hook (callback) for when a user is being linked (the second parameter passed to `authenticate()`), we also provide ways to hook into new user registrations as well as only existing user linking.
 
-	// To use it, in app/routes.php
-	Route::controller('oauth', 'Cartalyst\SentrySocial\Controllers\OAuthController');
+For example, this may be useful to send welcome emails when new users are being registered:
 
-	// To extend it, make a class which extends Cartalyst\SentrySocial\Controllers\OAuthController
-	Route::controller('oauth', 'MyOAuthController');
+	Manager::registering(function(Cartalyst\SentrySocial\Links\LinkInterface $link, $provider, $token, $slug)
+	{
+		$user = $link->getUser();
+		
+		Mail::later($user->email, 'welcome', compact('user', 'slug'));
+	});
+	
+	Manager::existing(function(Cartalyst\SentrySocial\Links\LinkInterface $link, $provider, $token, $slug)
+	{
+		// Callback for existing users
+	});
+
+	// Finally, after hooks are registered, you may authenticate away
+	$user = Manager::authenticate('slug');
