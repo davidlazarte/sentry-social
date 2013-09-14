@@ -27,7 +27,7 @@ class NativeProvider implements ProviderInterface {
 
 	public function getOAuth1Verifier()
 	{
-		return isset($_GET['verifier']) ? $_GET['verifier'] : null;
+		return isset($_GET['oauth_verifier']) ? $_GET['oauth_verifier'] : null;
 	}
 
 	public function getOAuth2Code()

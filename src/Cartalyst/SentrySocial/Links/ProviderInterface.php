@@ -23,10 +23,10 @@ interface ProviderInterface {
 	/**
 	 * Finds a link (or creates one) for the given provider slug and uid.
 	 *
-	 * @param  string  $provider
+	 * @param  string  $slug
 	 * @param  mixed   $uid
 	 * @return \Cartalyst\SentrySocial\Links\LinkInterface
 	 */
-	public function findLink($provider, $uid);
+	public function findLink($slug, $uid);
 
 }

@@ -47,7 +47,7 @@ class IlluminateProvider implements ProviderInterface {
 
 	public function getOAuth1Verifier()
 	{
-		return $this->request->input('verifier');
+		return $this->request->input('oauth_verifier');
 	}
 
 	public function getOAuth2Code()

@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 
-class MigrationCartalystSentrySocialAddAccessTokenSecret extends Migration {
+class MigrationCartalystSentrySocialAlterLinksTable extends Migration {
 
 	/**
 	 * Run the migrations.

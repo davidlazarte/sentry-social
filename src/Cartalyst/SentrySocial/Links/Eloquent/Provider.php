@@ -49,24 +49,25 @@ class Provider implements ProviderInterface {
 	/**
 	 * Finds a link (or creates one) for the given provider slug and uid.
 	 *
-	 * @param  string  $provider
+	 * @param  string  $slug
 	 * @param  mixed   $uid
 	 * @return \Cartalyst\SentrySocial\Links\LinkInterface
 	 */
-	public function findLink($provider, $uid)
+	public function findLink($slug, $uid)
 	{
 		$query = $this
 			->createModel()
 			->newQuery()
-			->where('provider', '=', $provider)
+			->where('provider', '=', $slug)
 			->where('uid', '=', $uid);
 
 		if ( ! $link = $query->first())
 		{
 			$link = $this->createModel();
-
-			$link->fill(compact('provider', 'uid'));
-
+			$link->fill(array(
+				'provider' => $slug,
+				'uid'      => $uid,
+			));
 			$link->save();
 		}
 

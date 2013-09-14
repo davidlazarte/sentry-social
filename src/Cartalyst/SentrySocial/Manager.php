@@ -237,7 +237,7 @@ class Manager {
 		if ( ! $user = $link->getUser())
 		{
 			$userProvider = $this->sentry->getUserProvider();
-			$login        = $provider->getUserEmail($token) ?: $provider->getUserScreenName($token).'@'.$uid;
+			$login        = $provider->getUserEmail($token) ?: $uid.'@'.$slug;
 
 			try
 			{
@@ -331,7 +331,7 @@ class Manager {
 	{
 		if ($this->oauthVersion($provider) == 1)
 		{
-			$temporaryIdentifier = $this->requestProvider->getOAuth1TemporaryIdentifier();
+			$temporaryIdentifier = $this->requestProvider->getOAuth1TemporaryCredentialsIdentifier();
 
 			if ( ! $temporaryIdentifier)
 			{
