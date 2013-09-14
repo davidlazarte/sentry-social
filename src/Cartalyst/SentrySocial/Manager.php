@@ -160,18 +160,19 @@ class Manager {
 	 * to an event.
 	 *
 	 * @param  string  $slug
+	 * @param  string  $callbackUri
 	 * @param  Closure $callback
 	 * @param  bool    $remmber
 	 * @return \Cartalyst\Sentry\Users\UserInterface
 	 */
-	public function authenticate($slug, Closure $callback = null, $remember = false)
+	public function authenticate($slug, $callbackUri = null, Closure $callback = null, $remember = false)
 	{
 		// If a callback is supplied, we'll treat it as a global linking
 		// callback. Specific callbacks for registering and existing
 		// users can be registered outside of this method.
 		if ($callback) $this->linking($callback);
 
-		$provider = $this->make($slug);
+		$provider = $this->make($slug, $callbackUri);
 		$token    = $this->retrieveToken($provider);
 
 		$link = $this->link($slug, $provider, $token);
