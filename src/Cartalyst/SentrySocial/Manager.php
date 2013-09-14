@@ -135,7 +135,7 @@ class Manager {
 	 * @param  string  $callbackUri
 	 * @return string
 	 */
-	public function getAuthorizeUrl($slug, $callbackUri = null)
+	public function getAuthorizationUrl($slug, $callbackUri = null)
 	{
 		$provider = $this->make($slug, $callbackUri);
 
@@ -148,10 +148,10 @@ class Manager {
 
 			$this->session->put($temporaryCredentials);
 
-			return $provider->getAuthorizeUrl($temporaryCredentials);
+			return $provider->getAuthorizationUrl($temporaryCredentials);
 		}
 
-		return $provider->getAuthorizeUrl();
+		return $provider->getAuthorizationUrl();
 	}
 
 	/**
