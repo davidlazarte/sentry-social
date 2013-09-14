@@ -69,6 +69,13 @@ return array(
 			),
 		),
 
+		'microsoft' => array(
+			'driver'     => 'Microsoft',
+			'identifier' => '',
+			'secret'     => '',
+			'scopes'     => array('wl.basic', 'wl.emails'),
+		),
+
 		'twitter' => array(
 			'driver'     => 'Twitter',
 			'identifier' => '',
@@ -116,13 +123,6 @@ return array(
 		// 	'identifier' => '',
 		// 	'secret'     => '',
 		// 	'scopes'     => array(),
-		// ),
-
-		// 'microsoft' => array(
-		// 	'driver'     => 'Microsoft',
-		// 	'identifier' => '',
-		// 	'secret'     => '',
-		// 	'scopes'     => array('emails'),
 		// ),
 
 		// 'soundcloud' => array(
