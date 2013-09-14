@@ -20,64 +20,7 @@
 
 return array(
 
-	/*
-	|--------------------------------------------------------------------------
-	| Connections
-	|--------------------------------------------------------------------------
-	|
-	| Connections are simple. Each key is a unique slug for the connection. Use
-	| anything, just make it unique. This is how you reference it in Sentry
-	| Social. Each slug requires a driver, which must match a valid inbuilt
-	| driver or may match your own custom class name that inherits from a
-	| valid base driver.
-	|
-	| Make sure each connection contains an "identifier" and a "secret". Thse
-	| are also known as "key" and "secret", "app id" and "app secret"
-	| depending on the service. We're using "identifier" and
-	| "secret" for consistency.
-	|
-	| OAuth2 providers may contain an optional "scopes" array, which is a
-	| list of scopes you're requesting from the user for that connection.
-	|
-	| You may use multiple connections with the same driver!
-	|
-	*/
-
 	'connections' => array(
-
-		'github' => array(
-			'driver'     => 'GitHub',
-			'identifier' => '',
-			'secret'     => '',
-			'scopes'     => array('user'),
-		),
-
-		'twitter' => array(
-			'driver'     => 'Twitter',
-			'identifier' => '',
-			'secret'     => '',
-		),
-
-		'tumblr' => array(
-			'driver'     => 'Tumblr',
-			'identifier' => '',
-			'secret'     => '',
-		),
-
-	/*
-	|--------------------------------------------------------------------------
-	| Coming Soon
-	|--------------------------------------------------------------------------
-	|
-	| The below connections are coming very soon. We're in the process of
-	| adding the requirements to the underlying OAuth packages,
-	| league/oauth1-client and league/oauth2-client. The
-	| requirements we're adding are UID, email and
-	| scren name fetching. As soon as they're
-	| added, these drivers will be
-	| available.
-	|
-	*/
 
 		// 'bitly' => array(
 		// 	'driver'     => 'bitly',
@@ -86,12 +29,12 @@ return array(
 		// 	'scopes'     => array(),
 		// ),
 
-		// 'facebook' => array(
-		// 	'driver'     => 'Facebook',
-		// 	'identifier' => '',
-		// 	'secret'     => '',
-		// 	'scopes'     => array('email'),
-		// ),
+		'facebook' => array(
+			'driver'     => 'Facebook',
+			'identifier' => '',
+			'secret'     => '',
+			'scopes'     => array('email'),
+		),
 
 		// 'fitbit' => array(
 		// 	'driver'     => 'Fitbit',
@@ -104,6 +47,13 @@ return array(
 		// 	'identifier' => '',
 		// 	'secret'     => '',
 		// 	'scopes'     => array(),
+		// ),
+
+		// 'github' => array(
+		// 	'driver'     => 'GitHub',
+		// 	'identifier' => '',
+		// 	'secret'     => '',
+		// 	'scopes'     => array('user'),
 		// ),
 
 		// 'google' => array(
@@ -127,6 +77,11 @@ return array(
 		// 	'scopes'     => array(),
 		// ),
 
+		'twitter' => array(
+			'driver'     => 'Twitter',
+			'identifier' => '',
+			'secret'     => '',
+		),
 
 		// 'yammer' => array(
 		// 	'driver'     => 'Yammer',
@@ -149,7 +104,6 @@ return array(
 		// 	'scopes'     => array('r_fullprofile', 'r_emailaddress'),
 		// ),
 
-
 	),
 
 	/*
@@ -161,8 +115,9 @@ return array(
 	| authentications with user instances. Feel free to use your own model
 	| with our provider.
 	|
+	|
 	*/
 
-	'link' => 'Cartalyst\SentrySocial\Links\Eloquent\Link',
+	'link' => 'Cartalyst\SentrySocial\SocialLinks\Eloquent\SocialLink',
 
 );
