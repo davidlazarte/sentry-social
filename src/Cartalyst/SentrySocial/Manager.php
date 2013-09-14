@@ -127,7 +127,7 @@ class Manager {
 	}
 
 	/**
-	 * Returns the authorize URI for a connection with the given
+	 * Returns the authorize URL for a connection with the given
 	 * slug. Abstracts away the differences between OAuth1 and
 	 * OAuth2 for a uniform API.
 	 *
@@ -135,7 +135,7 @@ class Manager {
 	 * @param  string  $callbackUri
 	 * @return string
 	 */
-	public function getAuthorizeUri($slug, $callbackUri = null)
+	public function getAuthorizeUrl($slug, $callbackUri = null)
 	{
 		$provider = $this->make($slug, $callbackUri);
 
@@ -148,10 +148,10 @@ class Manager {
 
 			$this->session->put($temporaryCredentials);
 
-			return $provider->getAuthorizeUri($temporaryCredentials);
+			return $provider->getAuthorizeUrl($temporaryCredentials);
 		}
 
-		return $provider->getAuthorizeUri();
+		return $provider->getAuthorizeUrl();
 	}
 
 	/**
