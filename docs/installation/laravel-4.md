@@ -14,11 +14,9 @@ Ensure your `composer.json` file has the following structure (that you have the 
 			}
 		],
 		"require": {
-			"cartalyst/sentry-social": "2.0.*"
+			"cartalyst/sentry-social": "3.0.*"
 		}
 	}
-
-You may need to add a `"minimum-stability": "dev"` flag if it doesn't already exist until `cartalyst/sentry-social` has been marked as stable. A default Laravel 4 installation has this already as Laravel 4 isn't marked as stable yet.
 
 ##### Step 2
 
