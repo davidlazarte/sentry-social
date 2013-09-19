@@ -48,9 +48,13 @@ In Laravel, this would be:
 
 	Route::get('oauth/callback', function()
 	{
+		// Callback is required for providers such as Facebook and a few others (it's required
+		// by the spec, but some providers ommit this).
+		$callback = URL::current();
+
 		try
 		{
-			$user = SentrySocial::authenticate('facebook', function(Cartalyst\SentrySocial\Links\LinkInterface $link, $provider, $token, $slug)
+			$user = SentrySocial::authenticate('facebook', URL::current(), function(Cartalyst\SentrySocial\Links\LinkInterface $link, $provider, $token, $slug)
 			{
 				$user = $link->getUser(); // Modify the user in question
 				// You could add your custom data
@@ -76,10 +80,14 @@ In Laravel, this would be:
 
 Outside Laravel, this would be:
 
+	// Callback is required for providers such as Facebook and a few others (it's required
+	// by the spec, but some providers ommit this).
+	$callback = 'http://app.dev/callback.php';
+
 	// In callback.php
 	try
 	{
-		$user = $manager->authenticate('facebook', function(Cartalyst\SentrySocial\Links\LinkInterface $link, $provider, $token, $slug)
+		$user = $manager->authenticate('facebook', $callback, function(Cartalyst\SentrySocial\Links\LinkInterface $link, $provider, $token, $slug)
 		{
 			$user = $link->getUser(); // Modify the user in question
 			// You could add your custom data
