@@ -14,7 +14,9 @@ class MigrationCartalystSentrySocialAlterLinksTable extends Migration {
 		Schema::table('social', function($table)
 		{
 			// "Services" are now "providers"
-			$table->renameColumn('service', 'provider');
+			// $table->renameColumn('service', 'provider');
+			$table->dropColumn('service');
+			$table->string('provider');
 
 			// Remove out the extra params, they're no good to us
 			$table->dropColumn('extra_params');
@@ -54,7 +56,9 @@ class MigrationCartalystSentrySocialAlterLinksTable extends Migration {
 	{
 		Schema::table('social', function($table)
 		{
-			$table->renameColumn('provider', 'service');
+			// $table->renameColumn('provider', 'service');
+			$table->dropColumn('provider');
+			$table->string('service');
 			$table->text('extra_params')->nullable();
 			$table->string('request_token')->nullable();
 			$table->string('request_token_secret')->nullable();
