@@ -1,6 +1,8 @@
-### Installing Everywhere Else
+## Installing Everywhere Else
 
-##### Step 1
+### Step 1
+
+---
 
 Ensure your `composer.json` file has the following structure (that you have the `repositories` and the `require` entry):
 
@@ -16,7 +18,9 @@ Ensure your `composer.json` file has the following structure (that you have the 
 		}
 	}
 
-##### Step 2
+### Step 2
+
+---
 
 Create an instance of Sentry Social:
 

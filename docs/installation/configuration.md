@@ -1,9 +1,10 @@
-### Configuring Sentry Social
+## Configuring Sentry Social
 
 Configuring Sentry Social is remarkably easy and varies, depending on how you would like to use it.
 
+### Laravel 4
 
-#### Laravel 4
+---
 
 To configure Sentry Social in Laravel 4, you simply need to:
 
@@ -13,7 +14,9 @@ To configure Sentry Social in Laravel 4, you simply need to:
 
 For each connection you wish to use, you will need to add your application's `key` and `secret`. You can also add your own connections.
 
-#### Everywhere Else
+### Everywhere Else
+
+---
 
 > **Note:** We are working towards easier integration with other frameworks in the future with Sentry Social 3, namely FuelPHP and CodeIgniter.
 

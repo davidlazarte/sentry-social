@@ -1,3 +1,3 @@
-## Introduction
+## Overview
 
-* [Overview](/sentry-social-2/overview)
+- [Overview]({url}/overview)

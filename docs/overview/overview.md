@@ -1,36 +1,33 @@
-### Sentry Social 3
+## Sentry Social 3
 
 Sentry Social makes authenticating your users through social networks & third-party OAuth providers an absolute breeze.
 
 In version 3, we've added a focus on ease-of-use as well as the ability to authenticate with more and more services.
 
-> **Note:** To download you need to have a valid Cartalyst.com subscription.
-Click [here](https://www.cartalyst.com/pricing) to obtain your subscription.
+### Features {#features}
 
------------
+---
 
-### Features
-
-* Ability to authenticate through a number of pre-configured OAuth 1 and OAuth 2 services as well as adding an infinite number of custom OAuth 1 and OAuth 2 services.
-* Automatic user association and registering as well as logging in.
-* Simplistic API with ability to customize behavior as needed.
+- Ability to authenticate through a number of pre-configured OAuth 1 and OAuth 2 services as well as adding an infinite number of custom OAuth 1 and OAuth 2 services.
+- Automatic user association and registering as well as logging in.
+- Simplistic API with ability to customize behavior as needed.
 
 #### Oauth 1 Services
 
-* FitBit
-* Twitter
+- FitBit
+- Twitter
 
 #### Oauth 2 Services
 
-* bitly
-* Facebook
-* Foursquare
-* GitHub
-* Google
-* LinkedIn
-* Microsoft
-* SoundCloud
-* Yammer
+- bitly
+- Facebook
+- Foursquare
+- GitHub
+- Google
+- LinkedIn
+- Microsoft
+- SoundCloud
+- Yammer
 
 #### Upcoming OAuth Services
 
