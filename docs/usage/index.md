@@ -65,8 +65,8 @@ In Laravel, this would be:
                 $user = $link->getUser(); // Modify the user in question
                 // You could add your custom data
                 $data = $provider->getUserDetails($token);
-                
-                $user->foo = $data['foo'];
+
+                $user->foo = $data->foo;
                 $user->save();
             });
         }
@@ -79,7 +79,7 @@ In Laravel, this would be:
             {
                 return Redirect::to('oauth')->withErrors($error);
             }
-            
+
             App::abort(404);
         }
     });
@@ -98,8 +98,8 @@ Outside Laravel, this would be:
             $user = $link->getUser(); // Modify the user in question
             // You could add your custom data
             $data = $provider->getUserDetails($token);
-            
-            $user->foo = $data['foo'];
+
+            $user->foo = $data->foo;
             $user->save();
         });
     }
@@ -114,7 +114,7 @@ Outside Laravel, this would be:
             die();
             return Redirect::to('oauth')->withErrors($error);
         }
-        
+
         header('HTTP/1.0 404 Not Found');
     }
 
@@ -129,10 +129,10 @@ For example, this may be useful to send welcome emails when new users are being 
     Manager::registering(function(Cartalyst\SentrySocial\Links\LinkInterface $link, $provider, $token, $slug)
     {
         $user = $link->getUser();
-        
+
         Mail::later($user->email, 'welcome', compact('user', 'slug'));
     });
-    
+
     Manager::existing(function(Cartalyst\SentrySocial\Links\LinkInterface $link, $provider, $token, $slug)
     {
         // Callback for existing users
