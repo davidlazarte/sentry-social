@@ -175,10 +175,19 @@ class Manager {
 		$provider = $this->make($slug, $callbackUri);
 		$token    = $this->retrieveToken($provider);
 
-		$link = $this->link($slug, $provider, $token);
-		$user = $link->getUser();
+		// We'll check if a user is already logged in. If so
+		// Sentry Social will link the logged in user.
+		if ($user = $this->sentry->getUser())
+		{
+			$link = $this->linkLoggedIn($slug, $provider, $token, $user);
+		}
+		else
+		{
+			$link = $this->linkLoggedOut($slug, $provider, $token);
+			$user = $link->getUser();
 
-		$this->login($user, $remember);
+			$this->login($user, $remember);
+		}
 
 		return $user;
 	}
@@ -220,6 +229,22 @@ class Manager {
 	}
 
 	/**
+	 * Retrieves a link for the given slug, unique ID
+	 * and token.
+	 *
+	 * @param  string $slug
+	 * @param  string  $uid
+	 * @param  mixed   $token
+	 * @return \Cartalyst\SentrySocial\Links\LinkInterface
+	 */
+	protected function retrieveLink($slug, $uid, $token)
+	{
+		$link = $this->linkProvider->findLink($slug, $uid);
+		$link->storeToken($token);
+		return $link;
+	}
+
+	/**
 	 * Retrieves a link and associates a user (will lazily
 	 * create one) for the given slug, provider and token.
 	 *
@@ -228,12 +253,32 @@ class Manager {
 	 * @param  mixed   $token
 	 * @return \Cartalyst\SentrySocial\Links\LinkInterface
 	 */
-	protected function link($slug, $provider, $token)
+	protected function linkLoggedIn($slug, $provider, $token, UserInterface $user)
 	{
-		$uid = $provider->getUserUid($token);
+		$uid  = $provider->getUserUid($token);
+		$link = $this->retrieveLink($slug, $uid, $token);
 
-		$link = $this->linkProvider->findLink($slug, $uid);
-		$link->storeToken($token);
+
+		$link->setUser($user);
+		$this->fireEvent('existing', $link, $provider, $token, $slug);
+		$this->fireEvent('linking', $link, $provider, $token, $slug);
+
+		return $link;
+	}
+
+	/**
+	 * Retrieves a link and associates a user (will lazily
+	 * create one) for the given slug, provider and token.
+	 *
+	 * @param  string  $slug
+	 * @param  mixed   $provider
+	 * @param  mixed   $token
+	 * @return \Cartalyst\SentrySocial\Links\LinkInterface
+	 */
+	protected function linkLoggedOut($slug, $provider, $token)
+	{
+		$uid  = $provider->getUserUid($token);
+		$link = $this->retrieveLink($slug, $uid, $token);
 
 		if ( ! $user = $link->getUser())
 		{

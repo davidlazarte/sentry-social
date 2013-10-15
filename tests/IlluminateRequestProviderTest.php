@@ -44,7 +44,7 @@ class IlluminateRequestProviderTest extends PHPUnit_Framework_TestCase {
 	public function testOAuth1Verifier()
 	{
 		$provider = new Provider($request = m::mock('Illuminate\Http\Request'));
-		$request->shouldReceive('input')->with('verifier')->once()->andReturn('verifier_value');
+		$request->shouldReceive('input')->with('oauth_verifier')->once()->andReturn('verifier_value');
 		$this->assertEquals('verifier_value', $provider->getOAuth1Verifier());
 	}
 

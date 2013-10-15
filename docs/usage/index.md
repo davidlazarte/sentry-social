@@ -42,7 +42,7 @@ Outside Laravel, this would be:
     header('Location: '.$url);
     exit;
 
-### Authenticating a user
+### Authenticating a User
 
 ---
 
@@ -117,6 +117,8 @@ Outside Laravel, this would be:
 
         header('HTTP/1.0 404 Not Found');
     }
+
+> **Note:** If you attempt to authenticate a provider when a Sentry user is already logged in, the authenticated provider account will be linked with that User. For you as a developer, this allows your users to link multiple social accounts easily. If you don't want to allow other accounts to be linked, either don't show the social login links and/or log the user out at the start of the authorization process (in your controller).
 
 ### Hooks
 

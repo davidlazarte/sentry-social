@@ -44,7 +44,7 @@ class NativeRequestProviderTest extends PHPUnit_Framework_TestCase {
 	public function testOAuth1Verifier()
 	{
 		$provider = new Provider;
-		$_GET['verifier'] = 'verifier_value';
+		$_GET['oauth_verifier'] = 'verifier_value';
 		$this->assertEquals('verifier_value', $provider->getOAuth1Verifier());
 	}
 

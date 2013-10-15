@@ -34,28 +34,16 @@ class EloquentLinkProviderTest extends PHPUnit_Framework_TestCase {
 		m::close();
 	}
 
-	/**
-	 * @expectedException InvalidArgumentException
-	 */
-	public function testInvalidToken()
-	{
-		$provider = new Provider;
-		$provider->findLink('foo', 'bar');
-	}
-
 	public function testFindingExistingLink()
 	{
 		$linkProvider = m::mock('Cartalyst\SentrySocial\Links\Eloquent\Provider[createModel]');
 		$linkProvider->shouldReceive('createModel')->once()->andReturn($query = m::mock('stdClass'));
 		$query->shouldReceive('newQuery')->once()->andReturn($query);
 		$query->shouldReceive('where')->with('provider', '=', 'slug')->once()->andReturn($query);
-		$query->shouldReceive('where')->with('uid', '=', 123)->once()->andReturn($query);
+		$query->shouldReceive('where')->with('uid', '=', 789)->once()->andReturn($query);
 		$query->shouldReceive('first')->once()->andReturn('success');
 
-		$provider     = m::mock('League\OAuth1\Client\Server\Server');
-		$provider->shouldReceive('getUserUid')->once()->andReturn(123);
-
-		$this->assertEquals('success', $linkProvider->findLink('slug', $provider));
+		$this->assertEquals('success', $linkProvider->findLink('slug', 789));
 	}
 
 	public function testFindingNonExistentLink()
@@ -65,20 +53,17 @@ class EloquentLinkProviderTest extends PHPUnit_Framework_TestCase {
 		$linkProvider->shouldReceive('createModel')->ordered()->once()->andReturn($query = m::mock('stdClass'));
 		$query->shouldReceive('newQuery')->once()->andReturn($query);
 		$query->shouldReceive('where')->with('provider', '=', 'slug')->once()->andReturn($query);
-		$query->shouldReceive('where')->with('uid', '=', 123)->once()->andReturn($query);
+		$query->shouldReceive('where')->with('uid', '=', 789)->once()->andReturn($query);
 		$query->shouldReceive('first')->once()->andReturn(null);
 
-		$linkProvider->shouldReceive('createModel')->ordered()->once()->andReturn($model = m::mock('Cartalyst\SentrySocial\Links\Eloquent\Link'));
+		$linkProvider->shouldReceive('createModel')->ordered()->once()->andReturn($model = m::mock('stdClass')); // Can't mock model, get "BadMethodCallException: Method Cartalyst\SentrySocial\Links\Eloquent\Link::hasGetMutator() does not exist on this mock object"
 		$model->shouldReceive('fill')->with(array(
 			'provider' => 'slug',
-			'uid'      => 123,
+			'uid'      => 789,
 		))->once();
 		$model->shouldReceive('save')->once();
 
-		$provider     = m::mock('League\OAuth1\Client\Server\Server');
-		$provider->shouldReceive('getUserUid')->once()->andReturn(123);
-
-		$this->assertEquals($model, $linkProvider->findLink('slug', $provider));
+		$this->assertEquals($model, $linkProvider->findLink('slug', 789));
 	}
 
 	public function testCreateModel()
