@@ -19,5 +19,4 @@ CREATE TABLE `social` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `social_service_uid_unique` (`service`,`uid`),
   UNIQUE KEY `social_user_id_service_unique` (`user_id`,`service`),
-  UNIQUE KEY `social_service_access_token_unique` (`service`,`access_token`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
