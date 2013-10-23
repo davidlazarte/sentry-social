@@ -13,10 +13,17 @@ class MigrationCartalystSentrySocialAlterLinksTable extends Migration {
 	{
 		Schema::table('social', function($table)
 		{
-			// "Services" are now "providers"
-			// $table->renameColumn('service', 'provider');
+			// Drop out a constraint where only a user could
+			// not have multiple instances of the same,
+			// provider with different provider IDs
+			$table->dropUnique('social_user_id_service_unique');
+
+			// "Services" are now "providers", so rename the columns
+			// and switch out indexes
 			$table->dropColumn('service');
 			$table->string('provider');
+			$table->dropUnique('social_service_uid_unique');
+			$table->unique(array('provider', 'uid'));
 
 			// Remove out the extra params, they're no good to us
 			$table->dropColumn('extra_params');
@@ -41,8 +48,8 @@ class MigrationCartalystSentrySocialAlterLinksTable extends Migration {
 
 			// Namespace the OAuth2 columns as we have with the new
 			// OAuth1 columns above.
-			$table->string('oauth2_access_token');
-			$table->string('oauth2_refresh_token');
+			$table->string('oauth2_access_token')->nullable();
+			$table->string('oauth2_refresh_token')->nullable();
 			$table->timestamp('oauth2_expires')->nullable();
 		});
 	}
@@ -56,9 +63,11 @@ class MigrationCartalystSentrySocialAlterLinksTable extends Migration {
 	{
 		Schema::table('social', function($table)
 		{
-			// $table->renameColumn('provider', 'service');
+			$table->unique(array('user_id', 'service'));
 			$table->dropColumn('provider');
 			$table->string('service');
+			$table->dropUnique('social_provider_uid_unique');
+			$table->unique(array('service', 'uid'));
 			$table->text('extra_params')->nullable();
 			$table->string('request_token')->nullable();
 			$table->string('request_token_secret')->nullable();
