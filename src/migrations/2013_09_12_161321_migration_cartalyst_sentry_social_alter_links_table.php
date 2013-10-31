@@ -23,7 +23,7 @@ class MigrationCartalystSentrySocialAlterLinksTable extends Migration {
 			$table->dropColumn('service');
 			$table->string('provider');
 			$table->dropUnique('social_service_uid_unique');
-			$table->unique(array('provider', 'uid'));
+			$table->unique(array('provider', 'user_id'));
 
 			// Remove out the extra params, they're no good to us
 			$table->dropColumn('extra_params');
@@ -66,7 +66,7 @@ class MigrationCartalystSentrySocialAlterLinksTable extends Migration {
 			$table->unique(array('user_id', 'service'));
 			$table->dropColumn('provider');
 			$table->string('service');
-			$table->dropUnique('social_provider_uid_unique');
+			$table->dropUnique('social_provider_user_id_unique');
 			$table->unique(array('service', 'uid'));
 			$table->text('extra_params')->nullable();
 			$table->string('request_token')->nullable();
