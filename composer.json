@@ -27,7 +27,7 @@
 	"require": {
 		"php": ">=5.3.3",
 		"cartalyst/sentry": "~2",
-		"league/oauth1-client": "1.*",
+		"league/oauth1-client": "dev-master",
 		"league/oauth2-client": "dev-master"
 	},
 	"require-dev": {
