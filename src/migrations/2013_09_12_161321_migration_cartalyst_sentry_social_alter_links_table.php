@@ -43,6 +43,7 @@ class MigrationCartalystSentrySocialAlterLinksTable extends Migration {
 			// as the "access_token" column is shared between OAuth1
 			// and OAuth2 in previous schemas.
 			$table->dropColumn('access_token');
+			$table->dropColumn('access_token_secret');
 			$table->dropColumn('refresh_token');
 			$table->dropColumn('end_of_life');
 
@@ -73,6 +74,7 @@ class MigrationCartalystSentrySocialAlterLinksTable extends Migration {
 			$table->string('request_token_secret')->nullable();
 			$table->dropColumn(array('oauth1_token_identifier', 'oauth1_token_secret'));
 			$table->renameColumn('oauth2_access_token', 'access_token');
+			$table->string('access_token_secret')->nullable();
 			$table->renameColumn('oauth2_refresh_token', 'refresh_token');
 			$table->integer('end_of_life')->nullable();
 		});

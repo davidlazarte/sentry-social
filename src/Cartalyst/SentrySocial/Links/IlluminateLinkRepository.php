@@ -29,7 +29,7 @@ class IlluminateLinkRepository implements LinkRepositoryInterface {
 	 *
 	 * @var string
 	 */
-	protected $model = 'Cartalyst\SentrySocial\Links\Eloquent\Link';
+	protected $model = 'Cartalyst\SentrySocial\Links\EloquentLink';
 
 	/**
 	 * Create a new Eloquent Social Link provider.
@@ -54,13 +54,15 @@ class IlluminateLinkRepository implements LinkRepositoryInterface {
 	 */
 	public function findLink($slug, $uid)
 	{
-		$query = $this
+		$link = $this
 			->createModel()
 			->newQuery()
+			->with('user')
 			->where('provider', '=', $slug)
-			->where('uid', '=', $uid);
+			->where('uid', '=', $uid)
+			->first();
 
-		if ( ! $link = $query->first())
+		if ($link === null)
 		{
 			$link = $this->createModel();
 			$link->fill(array(

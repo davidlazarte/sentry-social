@@ -18,9 +18,9 @@
  * @link       http://cartalyst.com
  */
 
-use Cartalyst\SentrySocial\Links\EloquentLinkProvider;
+use Cartalyst\SentrySocial\Links\IlluminateLinkRepository;
 use Cartalyst\SentrySocial\Links\LinkInterface;
-use Cartalyst\SentrySocial\Links\LinkProviderInterface;
+use Cartalyst\SentrySocial\Links\LinkRepositoryInterface;
 use Cartalyst\SentrySocial\RequestProviders\NativeRequestProvider;
 use Cartalyst\SentrySocial\RequestProviders\RequestProviderInterface;
 use Cartalyst\Sentry\Sentry;
@@ -46,7 +46,7 @@ class Manager {
 	 * The link provider, used for associating users
 	 * with OAuth providers.
 	 *
-	 * @var \Cartalyst\SentrySocial\Links\LinkProviderInterface
+	 * @var \Cartalyst\SentrySocial\Links\LinkRepositoryInterface
 	 */
 	protected $links;
 
@@ -89,13 +89,13 @@ class Manager {
 	 * Create a new Sentry Social Manager instance.
 	 *
 	 * @param  \Cartalyst\Sentry\Sentry  $sentry
-	 * @param  \Cartalyst\SentrySocial\Links\LinkProviderInterface  $links
+	 * @param  \Cartalyst\SentrySocial\Links\LinkRepositoryInterface  $links
 	 * @param  \Cartalyst\SentrySocial\RequestProviders\RequestProviderInterface  $request
 	 * @param  \Cartalyst\Sentry\Sessions\SessionInterface  $session
 	 * @param  \Illuminate\Events\Dispatcher  $dispatcher
 	 * @return void
 	 */
-	public function __construct(Sentry $sentry, LinkProviderInterface $links = null, RequestProviderInterface $request = null, SessionInterface $session = null, Dispatcher $dispatcher = null)
+	public function __construct(Sentry $sentry, LinkRepositoryInterface $links = null, RequestProviderInterface $request = null, SessionInterface $session = null, Dispatcher $dispatcher = null)
 	{
 		$this->sentry = $sentry;
 
@@ -294,29 +294,30 @@ class Manager {
 
 		if ( ! $user = $link->getUser())
 		{
-			$userProvider = $this->sentry->getUserProvider();
-			$login        = $provider->getUserEmail($token) ?: $uid.'@'.$slug;
+			$login = $provider->getUserEmail($token) ?: $uid.'@'.$slug;
+			$user = $this->sentry->findByCredentials(compact('login'));
 
-			try
+			if ($user !== null)
 			{
-				$user = $userProvider->findByLogin($login);
 				$link->setUser($user);
 
 				$this->fireEvent('existing', $link, $provider, $token, $slug);
 			}
-			catch (UserNotFoundException $e)
+			else
 			{
-				$emptyUser = $userProvider->getEmptyUser();
+				$user = $this
+					->sentry
+					->getUserRepository()
+					->createModel();
 
 				// Create a dummy password for the user
-				$passwordParams = array($slug, $login, time(), mt_rand());
-				shuffle($passwordParams);
+				$password = array($slug, $login, time(), mt_rand());
+				shuffle($password);
+				$password = implode('', $password);
 
-				// Setup an array of attributes we'll add onto
-				// so we can create our user.
-				$attributes = array(
-					$emptyUser->getLoginName()    => $login,
-					$emptyUser->getPasswordName() => implode('', $passwordParams),
+				$credentials = array(
+					'login'    => $login,
+					'password' => $password,
 				);
 
 				// Some providers give a first / last name, some don't.
@@ -324,17 +325,15 @@ class Manager {
 				// "first_name" attribute.
 				if (is_array($name = $provider->getUserScreenName($token)))
 				{
-					$attributes['first_name'] = $name[0];
-					$attributes['last_name']  = $name[1];
+					$credentials['first_name'] = $name[0];
+					$credentials['last_name']  = $name[1];
 				}
 				elseif (is_string($name))
 				{
-					$attributes['first_name'] = $name;
+					$credentials['first_name'] = $name;
 				}
 
-				$user = $userProvider->create($attributes);
-				$user->attemptActivation($user->getActivationCode());
-
+				$user = $this->sentry->registerAndActivate($credentials);
 				$link->setUser($user);
 
 				$this->fireEvent('registering', $link, $provider, $token, $slug);
@@ -359,21 +358,7 @@ class Manager {
 	 */
 	protected function login(UserInterface $user, $remember = false)
 	{
-		$throttleProvider = $this->sentry->getThrottleProvider();
-
-		// Now, we will check the throttling to ensure we are
-		// not logging in a user which shouldn't be allowed.
-		if ($throttleProvider->isEnabled())
-		{
-			$throttle = $throttleProvider->findByUserId(
-				$user->getId(),
-				$this->sentry->getIpAddress()
-			);
-
-			$throttle->check();
-		}
-
-		$this->sentry->login($user, $remember);
+		return $this->sentry->authenticate($user, $remember);
 	}
 
 	/**

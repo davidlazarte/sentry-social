@@ -36,6 +36,7 @@ class EloquentLink extends Model implements LinkInterface {
 	 * {@inheritDoc}
 	 */
 	protected $fillable = array(
+		'provider',
 		'uid',
 		'oauth1_token_identifier',
 		'oauth1_token_secret',
@@ -58,7 +59,7 @@ class EloquentLink extends Model implements LinkInterface {
 	 */
 	public function user()
 	{
-		return $this->belongsTo('Cartalyst\Sentry\Users\Eloquent\User', 'user_id');
+		return $this->belongsTo(static::$usersModel, 'user_id');
 	}
 
 	/**
@@ -100,7 +101,7 @@ class EloquentLink extends Model implements LinkInterface {
 	 */
 	public function getUser()
 	{
-		return $this->user()->getResults();
+		return $this->user;
 	}
 
 	/**

@@ -21,7 +21,7 @@
 use App;
 use Config;
 use Exception;
-use Illuminate\Routing\Controllers\Controller;
+use Illuminate\Routing\Controller;
 use Input;
 use Redirect;
 use Sentry;
@@ -43,7 +43,7 @@ class OAuthController extends Controller {
 			return ($connection['identifier'] and $connection['secret']);
 		});
 
-		return View::make('cartalyst/sentry-social::oauth/index', compact('connections'));
+		return View::make('cartalyst/sentry-social::oauth.index', compact('connections'));
 	}
 
 	/**
@@ -97,7 +97,7 @@ class OAuthController extends Controller {
 
 		$user = Sentry::getUser();
 
-		return View::make('cartalyst/sentry-social::oauth/authenticated', compact('user'));
+		return View::make('cartalyst/sentry-social::oauth.authenticated', compact('user'));
 	}
 
 }

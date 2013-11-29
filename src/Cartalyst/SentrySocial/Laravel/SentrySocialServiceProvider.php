@@ -18,8 +18,9 @@
  * @link       http://cartalyst.com
  */
 
-use Cartalyst\SentrySocial\Links\Eloquent\Provider as LinkProvider;
-use Cartalyst\SentrySocial\RequestProviders\IlluminateProvider as RequestProvider;
+use Cartalyst\SentrySocial\Links\IlluminateLinkRepository;
+use Cartalyst\SentrySocial\Manager;
+use Cartalyst\SentrySocial\RequestProviders\IlluminateRequestProvider;
 use Cartalyst\Sentry\Sessions\IlluminateSession;
 
 class SentrySocialServiceProvider extends \Illuminate\Support\ServiceProvider {
@@ -50,7 +51,7 @@ class SentrySocialServiceProvider extends \Illuminate\Support\ServiceProvider {
 
 	protected function registerLinkProvider()
 	{
-		$this->app['sentry.social.link'] = $this->app->share(function($app)
+		$this->app['sentry.social.links'] = $this->app->share(function($app)
 		{
 			$model = $app['config']['cartalyst/sentry-social::link'];
 
@@ -60,7 +61,7 @@ class SentrySocialServiceProvider extends \Illuminate\Support\ServiceProvider {
 				forward_static_call_array(array($model, 'setUsersModel'), array($users));
 			}
 
-			return new LinkProvider($model);
+			return new IlluminateLinkRepository($model);
 		});
 	}
 
@@ -68,7 +69,7 @@ class SentrySocialServiceProvider extends \Illuminate\Support\ServiceProvider {
 	{
 		$this->app['sentry.social.request'] = $this->app->share(function($app)
 		{
-			return new RequestProvider($app['request']);
+			return new IlluminateRequestProvider($app['request']);
 		});
 	}
 
@@ -93,7 +94,7 @@ class SentrySocialServiceProvider extends \Illuminate\Support\ServiceProvider {
 		{
 			$manager = new Manager(
 				$app['sentry'],
-				$app['sentry.social.link'],
+				$app['sentry.social.links'],
 				$app['sentry.social.request'],
 				$app['sentry.social.session'],
 				$app['events']
@@ -113,7 +114,7 @@ class SentrySocialServiceProvider extends \Illuminate\Support\ServiceProvider {
 	public function provides()
 	{
 		return array(
-			'sentry.social.link',
+			'sentry.social.links',
 			'sentry.social.request',
 			'sentry.social.session',
 			'sentry.social',
