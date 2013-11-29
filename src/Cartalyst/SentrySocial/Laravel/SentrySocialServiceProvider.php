@@ -1,4 +1,4 @@
-<?php namespace Cartalyst\SentrySocial;
+<?php namespace Cartalyst\SentrySocial\Laravel;
 /**
  * Part of the Sentry Social package.
  *
@@ -25,28 +25,26 @@ use Cartalyst\Sentry\Sessions\IlluminateSession;
 class SentrySocialServiceProvider extends \Illuminate\Support\ServiceProvider {
 
 	/**
-	 * Boot the service provider.
-	 *
-	 * @return void
+	 * {@inheritDoc}
+	 */
+	protected $defer = true;
+
+	/**
+	 * {@inheritDoc}
 	 */
 	public function boot()
 	{
-		$this->package('cartalyst/sentry-social', 'cartalyst/sentry-social');
+		$this->package('cartalyst/sentry-social', 'cartalyst/sentry-social', __DIR__.'/../../..');
 	}
 
 	/**
-	 * Register the service provider.
-	 *
-	 * @return void
+	 * {@inheritDoc}
 	 */
 	public function register()
 	{
 		$this->registerLinkProvider();
-
 		$this->registerRequestProvider();
-
 		$this->registerSession();
-
 		$this->registerSentrySocial();
 	}
 
@@ -55,6 +53,12 @@ class SentrySocialServiceProvider extends \Illuminate\Support\ServiceProvider {
 		$this->app['sentry.social.link'] = $this->app->share(function($app)
 		{
 			$model = $app['config']['cartalyst/sentry-social::link'];
+
+			$users = $app['config']['cartalyst/sentry::users.model'];
+			if (class_exists($model) and method_exists($model, 'setUsersModel'))
+			{
+				forward_static_call_array(array($model, 'setUsersModel'), array($users));
+			}
 
 			return new LinkProvider($model);
 		});
@@ -101,6 +105,19 @@ class SentrySocialServiceProvider extends \Illuminate\Support\ServiceProvider {
 
 			return $manager;
 		});
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function provides()
+	{
+		return array(
+			'sentry.social.link',
+			'sentry.social.request',
+			'sentry.social.session',
+			'sentry.social',
+		);
 	}
 
 }

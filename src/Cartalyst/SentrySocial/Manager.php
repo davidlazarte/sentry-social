@@ -18,11 +18,11 @@
  * @link       http://cartalyst.com
  */
 
-use Cartalyst\SentrySocial\Links\Eloquent\Provider as LinkProvider;
-use Cartalyst\SentrySocial\Links\LinkInterface as LinkInterface;
-use Cartalyst\SentrySocial\Links\ProviderInterface as LinkProviderInterface;
-use Cartalyst\SentrySocial\RequestProviders\NativeProvider as NativeRequestProvider;
-use Cartalyst\SentrySocial\RequestProviders\ProviderInterface as RequestProviderInterface;
+use Cartalyst\SentrySocial\Links\EloquentLinkProvider;
+use Cartalyst\SentrySocial\Links\LinkInterface;
+use Cartalyst\SentrySocial\Links\LinkProviderInterface;
+use Cartalyst\SentrySocial\RequestProviders\NativeRequestProvider;
+use Cartalyst\SentrySocial\RequestProviders\RequestProviderInterface;
 use Cartalyst\Sentry\Sentry;
 use Cartalyst\Sentry\Sessions\NativeSession;
 use Cartalyst\Sentry\Sessions\SessionInterface;
@@ -46,16 +46,16 @@ class Manager {
 	 * The link provider, used for associating users
 	 * with OAuth providers.
 	 *
-	 * @var \Cartalyst\SentrySocial\Links\ProviderInterface
+	 * @var \Cartalyst\SentrySocial\Links\LinkProviderInterface
 	 */
-	protected $linkProvider;
+	protected $links;
 
 	/**
 	 * The request provider.
 	 *
 	 * @var \Cartalyst\SentrySocial\RequestProviders\ProviderInterface
 	 */
-	protected $requestProvider;
+	protected $request;
 
 	/**
 	 * A Sentry session driver.
@@ -89,18 +89,30 @@ class Manager {
 	 * Create a new Sentry Social Manager instance.
 	 *
 	 * @param  \Cartalyst\Sentry\Sentry  $sentry
-	 * @param  \Cartalyst\SentrySocial\Links\ProviderInterface  $linkProvider
-	 * @param  \Cartalyst\SentrySocial\RequestProviders\ProviderInterface  $requestProvider
+	 * @param  \Cartalyst\SentrySocial\Links\LinkProviderInterface  $links
+	 * @param  \Cartalyst\SentrySocial\RequestProviders\RequestProviderInterface  $request
 	 * @param  \Cartalyst\Sentry\Sessions\SessionInterface  $session
 	 * @param  \Illuminate\Events\Dispatcher  $dispatcher
 	 * @return void
 	 */
-	public function __construct(Sentry $sentry, LinkProviderInterface $linkProvider = null, RequestProviderInterface $requestProvider = null, SessionInterface $session = null, Dispatcher $dispatcher = null)
+	public function __construct(Sentry $sentry, LinkProviderInterface $links = null, RequestProviderInterface $request = null, SessionInterface $session = null, Dispatcher $dispatcher = null)
 	{
-		$this->sentry          = $sentry;
-		$this->linkProvider    = $linkProvider ?: new LinkProvider;
-		$this->requestProvider = $requestProvider ?: new NativeRequestProvider;
-		$this->session         = $session ?: new NativeSession('cartalyst_sentry_social');
+		$this->sentry = $sentry;
+
+		if (isset($links))
+		{
+			$this->links = $links;
+		}
+
+		if (isset($request))
+		{
+			$this->request = $request;
+		}
+
+		if (isset($session))
+		{
+			$this->session = $session;
+		}
 
 		if (isset($dispatcher))
 		{
@@ -239,7 +251,7 @@ class Manager {
 	 */
 	protected function retrieveLink($slug, $uid, $token)
 	{
-		$link = $this->linkProvider->findLink($slug, $uid);
+		$link = $this->links->findLink($slug, $uid);
 		$link->storeToken($token);
 		return $link;
 	}
@@ -377,14 +389,14 @@ class Manager {
 	{
 		if ($this->oauthVersion($provider) == 1)
 		{
-			$temporaryIdentifier = $this->requestProvider->getOAuth1TemporaryCredentialsIdentifier();
+			$temporaryIdentifier = $this->request->getOAuth1TemporaryCredentialsIdentifier();
 
 			if ( ! $temporaryIdentifier)
 			{
 				throw new AccessMissingException('Missing [oauth_token] parameter (used for OAuth1 temporary credentials identifier).');
 			}
 
-			$verifier = $this->requestProvider->getOAuth1Verifier();
+			$verifier = $this->request->getOAuth1Verifier();
 
 			if ( ! $verifier)
 			{
@@ -398,7 +410,7 @@ class Manager {
 			return $tokenCredentials;
 		}
 
-		$code = $this->requestProvider->getOAuth2Code();
+		$code = $this->request->getOAuth2Code();
 
 		if ( ! $code)
 		{
@@ -464,14 +476,79 @@ class Manager {
 	}
 
 	/**
-	 * Set the event dispatcher.
+	 * Get the links repository.
 	 *
-	 * @param  \Illuminate\Events\Dispatcher
+	 * @return \Cartalyst\SentrySocial\Links\LinkRepositoryInterface
+	 */
+	public function getLinksRepository()
+	{
+		if ($this->links === null)
+		{
+			$this->links = $this->createLinksRepository();
+		}
+
+		return $this->links;
+	}
+
+	/**
+	 * Set the links repository.
+	 *
+	 * @param  \Cartalyst\SentrySocial\Links\LinkRepositoryInterface  $links
 	 * @return void
 	 */
-	public function setDispatcher(Dispatcher $dispatcher)
+	public function setLinksRepository(LinkRepositoryInterface $links)
+	{
+		$this->links = $links;
+	}
+
+	/**
+	 * Creates a default links repository if none has been specified.
+	 *
+	 * @return \Cartalyst\SentrySocial\Links\IlluminateLinkRepository
+	 */
+	protected function createLinksRepository()
+	{
+		$model = 'Cartalyst\SentrySocial\Links\EloquentLink';
+
+		$users = $this->getUserRepository();
+
+		return new IlluminateLinkRepository($users, $model);
+	}
+
+	/**
+	 * Get the event dispatcher.
+	 *
+	 * @return \Illuminate\Events\Dispatcher
+	 */
+	public function getEventDispatcher()
+	{
+		if ($this->dispatcher === null)
+		{
+			$this->dispatcher = $this->createEventDispatcher();
+		}
+
+		return $this->dispatcher;
+	}
+
+	/**
+	 * Set the event dispatcher.
+	 *
+	 * @param  \Illuminate\Events\Dispatcher  $dispatcher
+	 * @return void
+	 */
+	public function setEventDispatcher(Dispatcher $dispatcher)
 	{
 		$this->dispatcher = $dispatcher;
+	}
+
+	/**
+	 * Creates a default event dispatcher if none has been specified.
+	 *
+	 * @return \Cartalyst\Sentry\Users\IlluminateEventDispatcher
+	 */
+	protected function createEventDispatcher()
+	{
+		return new Dispatcher;
 	}
 
 	/**

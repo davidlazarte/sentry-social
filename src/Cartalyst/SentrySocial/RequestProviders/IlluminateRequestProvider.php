@@ -20,7 +20,7 @@
 
 use Illuminate\Http\Request;
 
-class IlluminateProvider implements ProviderInterface {
+class IlluminateRequestProvider implements RequestProviderInterface {
 
 	/**
 	 * The request instance.
@@ -40,16 +40,25 @@ class IlluminateProvider implements ProviderInterface {
 		$this->request = $request;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function getOAuth1TemporaryCredentialsIdentifier()
 	{
 		return $this->request->input('oauth_token');
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function getOAuth1Verifier()
 	{
 		return $this->request->input('oauth_verifier');
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function getOAuth2Code()
 	{
 		return $this->request->input('code');

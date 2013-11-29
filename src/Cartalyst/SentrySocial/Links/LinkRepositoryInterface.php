@@ -1,4 +1,4 @@
-<?php namespace Cartalyst\SentrySocial\RequestProviders;
+<?php namespace Cartalyst\SentrySocial\Links;
 /**
  * Part of the Sentry Social package.
  *
@@ -18,12 +18,15 @@
  * @link       http://cartalyst.com
  */
 
-interface ProviderInterface {
+interface LinkRepositoryInterface {
 
-	public function getOAuth1TemporaryCredentialsIdentifier();
-
-	public function getOAuth1Verifier();
-
-	public function getOAuth2Code();
+	/**
+	 * Finds a link (or creates one) for the given provider slug and uid.
+	 *
+	 * @param  string  $slug
+	 * @param  mixed   $uid
+	 * @return \Cartalyst\SentrySocial\Links\LinkInterface
+	 */
+	public function findLink($slug, $uid);
 
 }

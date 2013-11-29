@@ -1,4 +1,4 @@
-<?php namespace Cartalyst\SentrySocial\Facades\Laravel;
+<?php namespace Cartalyst\SentrySocial\Laravel\Facades;
 /**
  * Part of the Sentry Social package.
  *

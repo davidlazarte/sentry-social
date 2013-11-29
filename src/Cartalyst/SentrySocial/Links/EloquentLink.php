@@ -1,4 +1,4 @@
-<?php namespace Cartalyst\SentrySocial\Links\Eloquent;
+<?php namespace Cartalyst\SentrySocial\Links;
 /**
  * Part of the Sentry Social package.
  *
@@ -19,12 +19,11 @@
  */
 
 use Cartalyst\Sentry\Users\UserInterface;
-use Cartalyst\SentrySocial\Links\LinkInterface;
 use Illuminate\Database\Eloquent\Model;
 use League\OAuth1\Client\Credentials\TokenCredentials as OAuth1TokenCredentials;
 use League\OAuth2\Client\Token\AccessToken as OAuth2AccessToken;
 
-class Link extends Model implements LinkInterface {
+class EloquentLink extends Model implements LinkInterface {
 
 	/**
 	 * The table associated with the model.
@@ -34,18 +33,46 @@ class Link extends Model implements LinkInterface {
 	protected $table = 'social';
 
 	/**
-	 * The attributes that aren't mass assignable.
-	 *
-	 * @var array
+	 * {@inheritDoc}
 	 */
-	protected $guarded = array();
+	protected $fillable = array(
+		'uid',
+		'oauth1_token_identifier',
+		'oauth1_token_secret',
+		'oauth2_access_token',
+		'oauth2_refresh_token',
+		'oauth2_expires',
+	);
 
 	/**
-	 * Store a token with the link.
+	 * The users model name.
 	 *
-	 * @param  mixed  $token
-	 * @return void
-	 * @throws \InvalidArgumentException
+	 * @var string
+	 */
+	protected static $usersModel = 'Cartalyst\Sentry\Users\EloquentUser';
+
+	/**
+	 * User relationship
+	 *
+	 * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+	 */
+	public function user()
+	{
+		return $this->belongsTo('Cartalyst\Sentry\Users\Eloquent\User', 'user_id');
+	}
+
+	/**
+	 * Get the attributes that should be converted to dates.
+	 *
+	 * @return array
+	 */
+	public function getDates()
+	{
+		return array_merge(parent::getDates(), array('oauth2_expires'));
+	}
+
+	/**
+	 * {@inheritDoc}
 	 */
 	public function storeToken($token)
 	{
@@ -57,8 +84,8 @@ class Link extends Model implements LinkInterface {
 		elseif ($token instanceof OAuth2AccessToken)
 		{
 			$this->oauth2_access_token  = $token->accessToken;
-			$this->oauth2_expires       = $token->expires;
 			$this->oauth2_refresh_token = $token->refreshToken;
+			$this->oauth2_expires       = $token->expires;
 		}
 		else
 		{
@@ -69,20 +96,7 @@ class Link extends Model implements LinkInterface {
 	}
 
 	/**
-	 * Returns the relationship to the user that this
-	 * service belongs to.
-	 *
-	 * @return Illuminate\Database\Eloquent\Relations\BelongsTo
-	 */
-	public function user()
-	{
-		return $this->belongsTo('Cartalyst\Sentry\Users\Eloquent\User', 'user_id');
-	}
-
-	/**
-	 * Get the user associated with the social link.
-	 *
-	 * @return Cartalyst\Sentry\Users\UserInterface  $user
+	 * {@inheritDoc}
 	 */
 	public function getUser()
 	{
@@ -90,26 +104,34 @@ class Link extends Model implements LinkInterface {
 	}
 
 	/**
-	 * Set the user associated with the social link.
-	 *
-	 * @param  Cartalyst\Sentry\Users\UserInterface  $user
-	 * @return void
+	 * {@inheritDoc}
 	 */
 	public function setUser(UserInterface $user)
 	{
-		$this->user_id = $user->getId();
+		$this->user()->associate($user);
 
 		$this->save();
 	}
 
 	/**
-	 * Get the attributes that should be converted to dates.
+	 * Get the users model.
 	 *
-	 * @return array
+	 * @return string
 	 */
-	public function getDates()
+	public static function getUsersModel()
 	{
-		return array_merge(parent::getDates(), array('oauth2_expires'));
+		return static::$usersModel;
+	}
+
+	/**
+	 * Set the users model.
+	 *
+	 * @param  string  $usersModel
+	 * @return void
+	 */
+	public static function setUsersModel($usersModel)
+	{
+		static::$usersModel = $usersModel;
 	}
 
 }

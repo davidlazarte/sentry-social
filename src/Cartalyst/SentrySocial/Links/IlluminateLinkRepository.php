@@ -1,4 +1,4 @@
-<?php namespace Cartalyst\SentrySocial\Links\Eloquent;
+<?php namespace Cartalyst\SentrySocial\Links;
 /**
  * Part of the Sentry Social package.
  *
@@ -19,11 +19,10 @@
  */
 
 use Cartalyst\SentrySocial\Services\ServiceInterface;
-use Cartalyst\SentrySocial\Links\ProviderInterface;
 use League\OAuth1\Client\Server\Server as OAuth1Server;
 use League\OAuth2\Client\Provider\IdentityProvider as OAuth2Provider;
 
-class Provider implements ProviderInterface {
+class IlluminateLinkRepository implements LinkRepositoryInterface {
 
 	/**
 	 * The Eloquent social model.

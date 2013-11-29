@@ -18,21 +18,27 @@
  * @link       http://cartalyst.com
  */
 
-class NativeProvider implements ProviderInterface {
+interface RequestProviderInterface {
 
-	public function getOAuth1TemporaryCredentialsIdentifier()
-	{
-		return isset($_GET['oauth_token']) ? $_GET['oauth_token'] : null;
-	}
+	/**
+	 * Get the OAuth 1 temporary credentials identifier from the query string.
+	 *
+	 * @return string
+	 */
+	public function getOAuth1TemporaryCredentialsIdentifier();
 
-	public function getOAuth1Verifier()
-	{
-		return isset($_GET['oauth_verifier']) ? $_GET['oauth_verifier'] : null;
-	}
+	/**
+	 * Get the OAuth 1 verifier code from the query string.
+	 *
+	 * @return string
+	 */
+	public function getOAuth1Verifier();
 
-	public function getOAuth2Code()
-	{
-		return isset($_GET['code']) ? $_GET['code'] : null;
-	}
+	/**
+	 * Get the OAuth 2 code from the query string used to retrieve access tokens.
+	 *
+	 * @return string
+	 */
+	public function getOAuth2Code();
 
 }
