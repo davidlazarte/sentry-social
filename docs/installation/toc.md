@@ -1,6 +1,10 @@
-## Installation
+## Install & Configure
 
 - [Installation]({url}/installation)
-    - [In Laravel 4]({url}/installation/laravel-4)
-    - [Everywhere Else]({url}/installation/else)
-- [Configuration]({url}/installation/configuration)
+- [Laravel 4]({url}/installation/laravel-4)
+	- [Composer](#composer)
+	- [Service Provider](#service-provider)
+	- [Alias](#alias)
+	- [Migrations](#migrations)
+	- [Configuration](#configuration)
+- [Composer]({url}/installation/composer)

@@ -1,4 +1,16 @@
 ## Usage
 
-- [Using Sentry Social]({url}/usage)
-- [Extending Sentry Social]({url}/extending)
+- [Laravel 4]({url}/usage/laravel-4)
+	- [OAuth Flow](#oauth-flow)
+	- [Add Connections](#connections)
+	- [Authorization](#authorization)
+	- [Authentication](#authentication)
+	- [Hooks](#hooks)
+- [Everywhere Else]({url}/usage/everywhere-else)
+	- [OAuth Flow](#oauth-flow)
+	- [Create an instance of Sentry Social](#create-instance)
+	- [Add Connections](#connections)
+	- [Authorization](#authorization)
+	- [Authentication](#authentication)
+	- [Hooks](#hooks)
+- [Extending Sentry Social]({url}/usage/extending)
