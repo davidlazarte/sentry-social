@@ -21,7 +21,7 @@
 use App;
 use Config;
 use Exception;
-use Illuminate\Routing\Controllers\Controller;
+use Illuminate\Routing\Controller;
 use Input;
 use Redirect;
 use Sentry;
