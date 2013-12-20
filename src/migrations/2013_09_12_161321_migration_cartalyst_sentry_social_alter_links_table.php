@@ -35,12 +35,12 @@ class MigrationCartalystSentrySocialAlterLinksTable extends Migration {
 			// not have multiple instances of the same,
 			// provider with different provider IDs
 			$table->dropUnique('social_user_id_service_unique');
+			$table->dropUnique('social_service_uid_unique');
 
 			// "Services" are now "providers", so rename the columns
 			// and switch out indexes
 			$table->dropColumn('service');
 			$table->string('provider')->after('user_id');
-			$table->dropUnique('social_service_uid_unique');
 			$table->unique(array('provider', 'uid'));
 
 			// Remove out the extra params, they're no good to us
