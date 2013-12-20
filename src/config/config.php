@@ -88,6 +88,13 @@ return array(
 			'secret'     => '',
 		),
 
+		'vkontakte' => array(
+			'driver'     => 'Vkontakte',
+			'identifier' => '',
+			'secret'     => '',
+			'scopes'     => array(),
+		),
+
 	),
 
 	/*
@@ -135,13 +142,6 @@ return array(
 
 		// 'yammer' => array(
 		// 	'driver'     => 'Yammer',
-		// 	'identifier' => '',
-		// 	'secret'     => '',
-		// 	'scopes'     => array(),
-		// ),
-
-		// 'vkontakte' => array(
-		// 	'driver'     => 'Vkontakte',
 		// 	'identifier' => '',
 		// 	'secret'     => '',
 		// 	'scopes'     => array(),
