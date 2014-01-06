@@ -82,9 +82,9 @@ class MigrationCartalystSentrySocialAlterLinksTable extends Migration {
 		Schema::table('social', function($table)
 		{
 			$table->unique(array('user_id', 'service'));
+			$table->dropUnique('social_provider_user_id_unique');
 			$table->dropColumn('provider');
 			$table->string('service');
-			$table->dropUnique('social_provider_user_id_unique');
 			$table->unique(array('service', 'uid'));
 			$table->text('extra_params')->nullable();
 			$table->string('request_token')->nullable();
