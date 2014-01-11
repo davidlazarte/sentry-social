@@ -91,9 +91,11 @@ class MigrationCartalystSentrySocialAlterLinksTable extends Migration {
 			$table->string('request_token')->nullable();
 			$table->string('request_token_secret')->nullable();
 			$table->dropColumn(array('oauth1_token_identifier', 'oauth1_token_secret'));
-			$table->renameColumn('oauth2_access_token', 'access_token');
+			$table->dropColumn('oauth2_access_token');
+			$table->string('access_token')->nullable();
 			$table->string('access_token_secret')->nullable();
-			$table->renameColumn('oauth2_refresh_token', 'refresh_token');
+			$table->dropColumn('oauth2_refresh_token');
+			$table->string('refresh_token')->nullable();
 			$table->integer('end_of_life')->nullable();
 			$table->unique(array('service', 'access_token'));
 		});
