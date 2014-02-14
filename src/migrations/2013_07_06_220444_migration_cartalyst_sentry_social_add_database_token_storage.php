@@ -59,11 +59,17 @@ class MigrationCartalystSentrySocialAddDatabaseTokenStorage extends Migration {
 		Schema::table('social', function($table)
 		{
 			$table->dropUnique('social_service_access_token_unique');
+		});
 
+		Schema::table('social', function($table)
+		{
 			$table->dropColumn(array(
-				'access_token', 'end_of_life',
-				'refresh_token', 'request_token',
-				'request_token_secret', 'extra_params',
+				'access_token',
+				'refresh_token',
+				'request_token',
+				'request_token_secret',
+				'extra_params',
+				'end_of_life',
 			));
 		});
 	}
